@@ -19,32 +19,24 @@
   📚 <a href="#-citation">Citation</a>
 </p>
 
+<p align="center">
+  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="49%">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="49%">
+</p>
+
+<p align="center">
+  <em><strong>Highlights.</strong> Left: CoSPlay improves code and unit-test capabilities without GT data or training. Right: CoSPlay reaches stronger token-cost versus Pass@1 trade-offs than GT-free TTS baselines on Qwen2.5-Instruct models.</em>
+</p>
+
 ## 📌 Introduction
 
 CoSPlay is a **GT-free, training-free test-time scaling (TTS)** framework for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without requiring ground-truth unit tests or releasing a separately trained model.
 
 The current release provides evaluation code, benchmark loaders, paper figures, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
 
-<p align="center">
-  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="88%">
-</p>
-
-<p align="center">
-  <em><strong>Capability Comparison.</strong> Performance comparison between our training-free and GT-free CoSPlay and other RLVR methods, which require costly weight updating or massive GT labels.</em>
-</p>
-
-<p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
-</p>
-
-<p align="center">
-  <em><strong>Efficiency.</strong> Token cost versus Pass@1 of TTS methods and CoSPlay on Qwen2.5-Instruct models. For each method, darker markers indicate its scaled variant with a larger budget.</em>
-</p>
-
 ## 🔥 Latest Updates
 
 - **2026-05**: Code, evaluation scripts, generated data, and logs are being prepared for public release.
-- **TODO**: Add the paper link after the paper page is available.
 
 ## 🎯 Motivation
 
@@ -182,6 +174,28 @@ The default configuration in `evaluation/eval.sh` is the final CoSPlay setting u
 | Evaluation mode | `bon` |
 | Default base model | `Qwen/Qwen2.5-7B-Instruct` |
 
+## 🗂️ Repository Layout
+
+```text
+CosPlay/
+  assets/         Paper figures and README preview images
+  CURE_data/      Benchmark JSON files used by the evaluator
+  evaluation/     Generation, execution, metrics, prompts, and eval script
+  LICENSE         MIT license
+  README.md       Project overview and usage notes
+```
+
+Key evaluation files:
+
+| File | Purpose |
+| --- | --- |
+| `evaluation/eval.sh` | Main evaluation entrypoint |
+| `evaluation/main.py` | Argument parsing and end-to-end evaluation orchestration |
+| `evaluation/generator.py` | Candidate code and unit-test generation pipeline |
+| `evaluation/self_play.py` | Self-play refinement loop |
+| `evaluation/execution.py` | Code execution and test running |
+| `evaluation/metrics.py` | Metric computation and logging |
+
 ## 📊 Interesting Results
 
 CoSPlay also generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
@@ -214,28 +228,6 @@ CoSPlay improves the accuracy-diversity frontier, indicating that better self-ge
   <em><strong>UT Diversity Trade-off.</strong> CoSPlay improves UT accuracy with slightly decreased yet competitive rank; larger markers indicate higher BoN and Signal scores, showing that this improved trade-off translates into stronger final selection capability.</em>
 </p>
 
-## 🗂️ Repository Layout
-
-```text
-CosPlay/
-  assets/         Paper figures and README preview images
-  CURE_data/      Benchmark JSON files used by the evaluator
-  evaluation/     Generation, execution, metrics, prompts, and eval script
-  LICENSE         MIT license
-  README.md       Project overview and usage notes
-```
-
-Key evaluation files:
-
-| File | Purpose |
-| --- | --- |
-| `evaluation/eval.sh` | Main evaluation entrypoint |
-| `evaluation/main.py` | Argument parsing and end-to-end evaluation orchestration |
-| `evaluation/generator.py` | Candidate code and unit-test generation pipeline |
-| `evaluation/self_play.py` | Self-play refinement loop |
-| `evaluation/execution.py` | Code execution and test running |
-| `evaluation/metrics.py` | Metric computation and logging |
-
 ## 📚 Citation
 
 If you use CoSPlay, please cite the paper:
@@ -259,4 +251,4 @@ This project is released under the [MIT License](LICENSE).
 
 ## 📬 Contact
 
-TODO.
+For questions, please contact zhangyi_hu@whu.edu.cn, cliu9168@gmail.com, or yfield017@gmail.com.

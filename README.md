@@ -37,7 +37,7 @@ The current release provides evaluation code, benchmark loaders, paper figures, 
 | 🤗 Data & Logs | [huggingface.co/datasets/yomi017/CosPlay](https://huggingface.co/datasets/yomi017/CosPlay) |
 | 📈 README Figures | [`assets/`](assets/) |
 
-## ✨ Contributions
+## ✨ Key Contributions
 
 - **GT-free and training-free self-play:** CoSPlay builds a cooperative loop between self-generated code and self-generated unit tests, improving inference-time performance without ground-truth unit tests or model weight updates.
 - **Execution-matrix signals:** Code and unit-test pass counts provide internal reliability signals, allowing the method to clean weak code, refresh noisy tests, repair useful failures, and co-evolve both pools.
@@ -48,7 +48,11 @@ The current release provides evaluation code, benchmark loaders, paper figures, 
 Existing RLVR methods can rely on costly ground-truth unit tests and weight updates, while GT-free TTS methods often spend more compute on sampling without reliably filtering noisy self-generated tests. CoSPlay targets the middle ground: high-accuracy code generation with **no GT tests** and **no additional training**.
 
 <p align="center">
-  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="100%">
+  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Motivation.</strong> Achieving high accuracy without any GT data and additional training.</em>
 </p>
 
 ## 🧠 Method Overview
@@ -62,7 +66,11 @@ CoSPlay treats code generation as a test-time interaction between a code pool an
 5. **Select** the final answer with BoN-style code selection.
 
 <p align="center">
-  <img src="assets/methodology.png" alt="CoSPlay methodology" width="100%">
+  <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Method Overview.</strong> Given a coding problem, CoSPlay first generates solution-oriented code ideas and failure-oriented UT ideas to bootstrap self-play with reliable and discriminative codes and UTs. It then builds a Code-UT execution matrix, whose pass-count statistics provide internal bidirectional filtering signals for code cleaning, coupled UT-code breaking, code repairing, refreshing, and co-evolving both pools. Finally, it resolves BoN ties by output-consensus clustering on randomly generated inputs, selecting codes that are most functionally consistent.</em>
 </p>
 
 The default configuration in `evaluation/eval.sh` is the final CoSPlay setting used by this repository:
@@ -80,25 +88,51 @@ The default configuration in `evaluation/eval.sh` is the final CoSPlay setting u
 CoSPlay improves both code-side and unit-test-side capabilities under the same GT-free, training-free setting, and remains complementary to stronger base or RLVR-trained models.
 
 <p align="center">
-  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="100%">
+  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Capability Comparison.</strong> Performance comparison between our training-free and GT-free CoSPlay and other RLVR methods, which require costly weight updating or massive GT labels.</em>
 </p>
 
 CoSPlay also generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
 
 <p align="center">
-  <img src="assets/generalization_of_cosplay_on_various_models.png" alt="Generalization of CoSPlay on various base models" width="100%">
+  <img src="assets/generalization_of_cosplay_on_various_models.png" alt="Generalization of CoSPlay on various base models" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Generalization.</strong> CoSPlay improves diverse base and RL models, showing that the cooperative self-play mechanism is complementary to stronger pretrained or post-trained checkpoints.</em>
+</p>
+
+CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN accuracy ceiling beyond strong baselines.
+
+<p align="center">
+  <img src="assets/Cosplay_scaling.png" alt="CoSPlay scaling with BoN candidate budget" width="70%">
+</p>
+
+<p align="center">
+  <em><strong>Scaling.</strong> Scalability of CoSPlay with candidate-pool size. CoSPlay reaches higher BoN accuracy as the candidate budget grows and remains above strong baseline models.</em>
 </p>
 
 Under comparable TTS budgets, CoSPlay reaches stronger cost-accuracy tradeoffs than other GT-free TTS baselines.
 
 <p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="100%">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Efficiency.</strong> Token cost versus Pass@1 of TTS methods and CoSPlay on Qwen2.5-Instruct models. For each method, darker markers indicate its scaled variant with a larger budget.</em>
 </p>
 
 Finally, CoSPlay improves the accuracy-diversity frontier, indicating that better self-generated tests can help select stronger and more diverse code candidates.
 
 <p align="center">
-  <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="100%">
+  <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>UT Diversity Trade-off.</strong> CoSPlay improves UT accuracy with slightly decreased yet competitive rank; larger markers indicate higher BoN and Signal scores, showing that this improved trade-off translates into stronger final selection capability.</em>
 </p>
 
 ## 📦 Data and Logs

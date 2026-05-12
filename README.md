@@ -20,12 +20,19 @@
 </p>
 
 <p align="center">
-  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="49%">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="49%">
+  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="78%">
 </p>
 
 <p align="center">
-  <em><strong>Highlights.</strong> Left: CoSPlay improves code and unit-test capabilities without GT data or training. Right: CoSPlay reaches stronger token-cost versus Pass@1 trade-offs than GT-free TTS baselines on Qwen2.5-Instruct models.</em>
+  <em><strong>Capability Comparison.</strong> Performance comparison between our training-free and GT-free CoSPlay and other RLVR methods, which require costly weight updating or massive GT labels.</em>
+</p>
+
+<p align="center">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="78%">
+</p>
+
+<p align="center">
+  <em><strong>Efficiency.</strong> Token cost versus Pass@1 of TTS methods and CoSPlay on Qwen2.5-Instruct models. For each method, darker markers indicate its scaled variant with a larger budget.</em>
 </p>
 
 ## 📌 Introduction
@@ -201,12 +208,14 @@ Key evaluation files:
 CoSPlay also generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
 
 <p align="center">
-  <img src="assets/generalization_of_cosplay_on_various_models.png" alt="Generalization of CoSPlay on various base models" width="88%">
+  <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="88%">
 </p>
 
 <p align="center">
   <em><strong>Generalization.</strong> CoSPlay improves diverse base and RL models, showing that the cooperative self-play mechanism is complementary to stronger pretrained or post-trained checkpoints.</em>
 </p>
+
+---
 
 CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN accuracy ceiling beyond strong baselines.
 
@@ -217,6 +226,8 @@ CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN
 <p align="center">
   <em><strong>Scaling.</strong> Scalability of CoSPlay with candidate-pool size. CoSPlay reaches higher BoN accuracy as the candidate budget grows and remains above strong baseline models.</em>
 </p>
+
+---
 
 CoSPlay improves the accuracy-diversity frontier, indicating that better self-generated tests can help select stronger and more diverse code candidates.
 

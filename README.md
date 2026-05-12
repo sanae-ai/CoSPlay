@@ -9,10 +9,12 @@
 
 <p align="center">
   📌 <a href="#-introduction">Introduction</a> •
+  🎯 <a href="#-motivation">Motivation</a> •
+  🧠 <a href="#-methods">Methods</a> •
+  ✨ <a href="#-contributions">Contributions</a> •
   🚀 <a href="#-quick-start">Quick Start</a> •
   📦 <a href="#-data-and-logs">Data & Logs</a> •
   🛠️ <a href="#-comprehensive-evaluation">Evaluation</a> •
-  🧠 <a href="#-methods">Methods</a> •
   📊 <a href="#-interesting-results">Results</a> •
   📚 <a href="#-citation">Citation</a>
 </p>
@@ -44,7 +46,37 @@ The current release provides evaluation code, benchmark loaders, paper figures, 
 - **2026-05**: Code, evaluation scripts, generated data, and logs are being prepared for public release.
 - **TODO**: Add the paper link after the paper page is available.
 
-## ✨ Key Contributions
+## 🎯 Motivation
+
+Existing RLVR methods can rely on costly ground-truth unit tests and weight updates, while GT-free TTS methods often spend more compute on sampling without reliably filtering noisy self-generated tests. CoSPlay targets the middle ground: high-accuracy code generation with **no GT tests** and **no additional training**.
+
+<p align="center">
+  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Motivation.</strong> Achieving high accuracy without any GT data and additional training.</em>
+</p>
+
+## 🧠 Methods
+
+CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool. The pipeline has three stages: idea-level exploration and attack, execution-matrix-driven self-play, and output-consensus cluster selection.
+
+1. **Explore** candidate code ideas and failure-oriented unit-test ideas.
+2. **Generate** code candidates and adversarial/random unit tests.
+3. **Self-play** between code and tests to clean weak code, replace weak tests, and fix useful failures.
+4. **Cluster** output behavior using random valid test inputs.
+5. **Select** the final answer with BoN-style code selection.
+
+<p align="center">
+  <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
+</p>
+
+<p align="center">
+  <em><strong>Method Overview.</strong> Given a coding problem, CoSPlay first generates solution-oriented code ideas and failure-oriented UT ideas to bootstrap self-play with reliable and discriminative codes and UTs. It then builds a Code-UT execution matrix, whose pass-count statistics provide internal bidirectional filtering signals for code cleaning, coupled UT-code breaking, code repairing, refreshing, and co-evolving both pools. Finally, it resolves BoN ties by output-consensus clustering on randomly generated inputs, selecting codes that are most functionally consistent.</em>
+</p>
+
+## ✨ Contributions
 
 - **GT-free and training-free self-play:** CoSPlay builds a cooperative loop between self-generated code and self-generated unit tests, improving inference-time performance without ground-truth unit tests or model weight updates.
 - **Execution-matrix signals:** Code and unit-test pass counts provide internal reliability signals, allowing the method to clean weak code, refresh noisy tests, repair useful failures, and co-evolve both pools.
@@ -150,35 +182,7 @@ The default configuration in `evaluation/eval.sh` is the final CoSPlay setting u
 | Evaluation mode | `bon` |
 | Default base model | `Qwen/Qwen2.5-7B-Instruct` |
 
-## 🧠 Methods
-
-CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool. The pipeline has three stages: idea-level exploration and attack, execution-matrix-driven self-play, and output-consensus cluster selection.
-
-1. **Explore** candidate code ideas and failure-oriented unit-test ideas.
-2. **Generate** code candidates and adversarial/random unit tests.
-3. **Self-play** between code and tests to clean weak code, replace weak tests, and fix useful failures.
-4. **Cluster** output behavior using random valid test inputs.
-5. **Select** the final answer with BoN-style code selection.
-
-<p align="center">
-  <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
-</p>
-
-<p align="center">
-  <em><strong>Method Overview.</strong> Given a coding problem, CoSPlay first generates solution-oriented code ideas and failure-oriented UT ideas to bootstrap self-play with reliable and discriminative codes and UTs. It then builds a Code-UT execution matrix, whose pass-count statistics provide internal bidirectional filtering signals for code cleaning, coupled UT-code breaking, code repairing, refreshing, and co-evolving both pools. Finally, it resolves BoN ties by output-consensus clustering on randomly generated inputs, selecting codes that are most functionally consistent.</em>
-</p>
-
 ## 📊 Interesting Results
-
-Existing RLVR methods can rely on costly ground-truth unit tests and weight updates, while GT-free TTS methods often spend more compute on sampling without reliably filtering noisy self-generated tests. CoSPlay targets the middle ground: high-accuracy code generation with **no GT tests** and **no additional training**.
-
-<p align="center">
-  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
-</p>
-
-<p align="center">
-  <em><strong>Motivation.</strong> Achieving high accuracy without any GT data and additional training.</em>
-</p>
 
 CoSPlay also generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
 
@@ -234,10 +238,15 @@ Key evaluation files:
 
 ## 📚 Citation
 
-If you use CoSPlay, please cite the paper below once citation information is available:
+If you use CoSPlay, please cite the paper:
 
 ```bibtex
-TODO
+@article{hu2026cosplay,
+  title={CoSPlay: Cooperative Self-Play at Test-Time with Self-Generated Code and Unit Test},
+  author={Hu, Zhangyi and Liu, Chenhui and Huang, Tian and Li, Jindong and Yang, Yang and Wu, Jiemin and Zhong, Zining and Yang, Menglin and Yue, Yutao},
+  journal={arXiv preprint},
+  year={2026}
+}
 ```
 
 ## 🌻 Acknowledgement

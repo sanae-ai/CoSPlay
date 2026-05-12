@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-"""
-Compute semantic similarity between problem statements and:
-1) correct codes (pass all test_bool_table)
-2) BoN-selected codes (selected via case_bool_table with valid UT mask)
 
-Supports directory sweep and threshold list (min_ut_pass_rate).
-"""
 
 from __future__ import annotations
 
@@ -313,7 +306,7 @@ def _evaluate_one(
             bon_acc_score += int(best_row.sum())
             bon_acc_num += int(len(best_row))
 
-        # Tie-break with semantic similarity among top case-table candidates.
+
         if codes:
             case_arr = np.array(case_table, dtype=bool)
             if args.max_codes is not None:

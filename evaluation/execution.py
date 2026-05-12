@@ -1,5 +1,4 @@
-# execution.py
-# 执行代码 + 跑 UT
+# Sandboxed execution helpers for generated programs and unit tests.
 import os
 import io
 import sys
@@ -19,17 +18,10 @@ os.makedirs(SANDBOX_ROOT, exist_ok=True)
 
 
 def _limit_case_fields(data_item, max_cases):
-    """
-    将题目的所有 case 相关列表裁剪/补齐到固定长度，保证布尔矩阵列数为 max_cases。
-    """
     if not max_cases or max_cases <= 0:
         return
 
     def _consistency_score(samples):
-        """
-        计算一致性：最高频样本出现次数，以及占比。
-        返回 (top_count, ratio, total_len)。
-        """
         if not samples or not isinstance(samples, list):
             return 0, 0.0, 0
         flat = [s for s in samples if s is not None]
@@ -41,9 +33,6 @@ def _limit_case_fields(data_item, max_cases):
         return top, top / total if total > 0 else 0.0, total
 
     def _pad_case_fields(target_len: int):
-        """
-        将各字段补齐到 target_len，缺省项标记为无效。
-        """
         pad_map = {
             "case_input": "",
             "case_output": "",
@@ -62,10 +51,10 @@ def _limit_case_fields(data_item, max_cases):
             if not isinstance(lst, list):
                 continue
             while len(lst) < target_len:
-                # 避免共享同一个 list 对象
+
                 lst.append(list(fill) if isinstance(fill, list) else fill)
 
-    # 先筛掉输入/输出缺失的 UT，再按一致性/有效性排序，取前 max_cases
+
     case_input = data_item.get("case_input", [])
     case_output = data_item.get("case_output", [])
     base_len = len(case_input)
@@ -85,11 +74,11 @@ def _limit_case_fields(data_item, max_cases):
             candidates.append((i, is_valid, top_count, ratio, total_len))
 
         if not candidates:
-            # 全部候选缺失时也保持列数一致，后续可重生成
+
             _pad_case_fields(max_cases)
             return
 
-        # 排序：有效优先 → 最高频次数 → 比例 → 样本数 → 原始顺序
+
         candidates.sort(key=lambda t: (bool(t[1]), t[2], t[3], t[4], -t[0]), reverse=True)
         selected_indices = [t[0] for t in candidates[:max_cases]]
 
@@ -114,16 +103,12 @@ def _limit_case_fields(data_item, max_cases):
             reorder(field)
         _pad_case_fields(max_cases)
     else:
-        # 没有任何 UT 记录时也强制补齐，保证列数固定
+
         _pad_case_fields(max_cases)
 
 
 @contextmanager
 def sandbox_env(stdin_payload: str):
-    """
-    创建一个沙盒环境（临时目录）来执行代码。
-    将输入 payload 写入文件，并在退出时恢复原来的工作目录。
-    """
     prev_cwd = os.getcwd()
     payload = stdin_payload if isinstance(stdin_payload, str) else str(stdin_payload)
     with tempfile.TemporaryDirectory(prefix="eval_exec_", dir=SANDBOX_ROOT) as tmp_dir:
@@ -137,10 +122,6 @@ def sandbox_env(stdin_payload: str):
             os.chdir(prev_cwd)
 
 def worker(script, input_val, output_queue):
-    """
-    工作进程函数：在沙盒中执行脚本。
-    捕获标准输出和异常，并将结果放入输出队列。
-    """
     stdin_payload = input_val if isinstance(input_val, str) else str(input_val)
     input_lines = iter(stdin_payload.splitlines())
 
@@ -150,22 +131,19 @@ def worker(script, input_val, output_queue):
         except StopIteration:
             raise EOFError("No more input")
 
-    # 1. 保存原始的文件描述符（这是通往真实屏幕的通道）
-    # fd 1 是 stdout, fd 2 是 stderr
+
     original_stdout_fd = os.dup(1)
     original_stderr_fd = os.dup(2)
 
-    # 2. 创建一个临时文件来“接住”所有的输出和报错
-    # w+b 模式打开，不经过缓冲，直接写入
+
     tfile = tempfile.TemporaryFile(mode='w+b')
 
     try:
-        # 3. 刷新 Python 缓冲区，防止之前的残留输出混入
+
         sys.stdout.flush()
         sys.stderr.flush()
 
-        # 4. [核心步骤] 重定向底层文件描述符
-        # 将 stdout (1) 和 stderr (2) 都指向临时文件
+
         os.dup2(tfile.fileno(), 1)
         os.dup2(tfile.fileno(), 2)
 
@@ -175,47 +153,47 @@ def worker(script, input_val, output_queue):
             "List": typing.List,
             "Tuple": typing.Tuple,
             "Optional": typing.Optional,
-            # 这里不再屏蔽 multiprocessing，允许模型使用
+
         }
 
         try:
             with sandbox_env(stdin_payload):
                 exec(script, context)
         except SystemExit:
-            pass # 正常退出不视为错误
+            pass
         except Exception:
-            # Python层面的报错会自动打印到 stderr (现在也就是我们的临时文件)
-            # 所以这里只需要捕获，不需要做额外操作，或者手动打印一下 traceback
+
+
             import traceback
             traceback.print_exc()
 
     except Exception as e:
-        # 这里捕获的是重定向逻辑本身的错误
-        # 既然此时 stdout/stderr 可能乱了，我们尝试写到文件里
+
+
         try:
             tfile.write(f"\nSystem Error: {e}\n".encode('utf-8'))
         except:
             pass
     
     finally:
-        # 5. 还原现场（非常重要！）
-        # 先刷新缓冲区，确保所有数据都写进临时文件了
+
+
         sys.stdout.flush()
         sys.stderr.flush()
 
-        # 恢复 stdout 和 stderr 指向屏幕
+
         os.dup2(original_stdout_fd, 1)
         os.dup2(original_stderr_fd, 2)
         
-        # 关闭复制出来的备份描述符
+
         os.close(original_stdout_fd)
         os.close(original_stderr_fd)
 
-        # 6. 读取临时文件内容，放入队列
+
         tfile.flush()
         tfile.seek(0)
         try:
-            # 读取所有输出（包括正常print和报错信息）
+
             content = tfile.read().decode('utf-8', errors='replace')
             output_queue.put(content)
         except Exception as read_e:
@@ -225,10 +203,6 @@ def worker(script, input_val, output_queue):
 
 
 def run_scripts_with_timeout(scripts, inputs, time_limits):
-    """
-    带超时限制地并行运行多个脚本。
-    使用 multiprocessing.Process 创建进程，并监控是否超时。
-    """
     results = [None] * len(scripts)
     processes = []
     queues = []
@@ -295,14 +269,9 @@ def run_scripts_with_chunk(code_list, test_input_list, time_limit_list, num_chun
     return exe_results
 
 
+# Full execution path used for final evaluation.
 def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True):
-    """
-    执行所有生成的代码和测试用例。
-    
-    只负责：根据 data 里的 generated_code / case_input / test_input 执行代码，
-    填充 case_exe_results / test_exe_results / *_bool_table。
-    """
-    print(f"✓ 读取生成结果: {len(data)} 条数据", flush=True)
+    print(f"✓ Loaded generation results: {len(data)} records", flush=True)
 
     case_index_list = []
     case_position_list = []
@@ -325,7 +294,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
         data[i].setdefault("test_output", [])
         data[i].setdefault("test_time_limit", 1)
         _limit_case_fields(data[i], max_cases)
-        # case
+
         if len(data[i]["case_input"]) * len(data[i]["generated_code"]) == 0:
             data[i]["case_exe_results"] = None
             data[i]["case_bool_table"] = None
@@ -335,7 +304,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
             data[i]["case_exe_results"] = [["" for _ in range(n_col)] for _ in range(n_row)]
             data[i]["case_bool_table"] = np.full((n_row, n_col), False, dtype=bool)
 
-        # test
+
         if len(data[i]["test_input"]) * len(data[i]["generated_code"]) == 0:
             data[i]["test_exe_results"] = None
             data[i]["test_bool_table"] = None
@@ -347,15 +316,15 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
 
         data_i = data[i].copy()
 
-        # case 执行列表（模型生成 UT）
+
         for j in range(len(data_i["generated_code"])):
             for k in range(len(data_i["case_input"])):
                 code = data_i["generated_code"][j]
                 case_input = data_i["case_input"][k]
                 case_output = data_i["case_output"][k]
                 
-                # 如果 UT 输入或输出为空（被过滤掉了），则跳过执行
-                # 只有在 plansearch 模式下，且使用了投票，且设置了自洽性数量 > 1 才跳过
+
+
                 if args.generation_mode == "plansearch":
                     if case_input is None or case_output is None:
                         continue
@@ -365,14 +334,14 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
                 case_output_list.append(case_output)
                 if "test_time_limit" in data_i.keys():
                     case_time_limit_list.append(data_i["test_time_limit"])
-                    # case_time_limit_list.append(5)
+
                 else:
                     case_time_limit_list.append(1)
                     print("No time limit provided!")
                 case_index_list.append(i)
                 case_position_list.append((j, k))
 
-        # test 执行列表（真实 UT）
+
         max_k = min(len(data_i["test_input"]), args.max_test)
         for j in range(len(data_i["generated_code"])):
             for k in range(max_k):
@@ -384,16 +353,16 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
                 test_output_list.append(test_output)
                 if "test_time_limit" in data_i.keys():
                     test_time_limit_list.append(data_i["test_time_limit"])
-                    # test_time_limit_list.append(5)
+
                 else:
                     test_time_limit_list.append(1)
                     print("No time limit provided!")
                 test_index_list.append(i)
                 test_position_list.append((j, k))
 
-    print(f"准备执行测试用例，总共 {len(case_code_list)} 条", flush=True)
+    print(f"Preparing to execute generated tests: {len(case_code_list)} jobs", flush=True)
 
-    # 执行模型生成的 UT（BoN 场景才需要）
+
     if not args.single_eval:
         cprint("start execution for generated unit tests", "green")
         case_exe_results = run_scripts_with_chunk(
@@ -407,7 +376,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
     else:
         case_exe_results = []
 
-    # 执行真实 UT
+
     cprint("start execution for ground-truth unit tests", "green")
     test_exe_results = run_scripts_with_chunk(
         test_code_list,
@@ -418,7 +387,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
     )
     cprint("execution job done!", "green")
 
-    # 回填 case
+
     for i in range(len(case_index_list)):
         index_i = case_index_list[i]
         j, k = case_position_list[i]
@@ -428,7 +397,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
                 case_exe_results[i], case_output_list[i]
             )
 
-    # 回填 test
+
     for i in range(len(test_index_list)):
         index_i = test_index_list[i]
         j, k = test_position_list[i]
@@ -437,33 +406,21 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
             test_exe_results[i], test_output_list[i]
         )
 
-    # 计算并打印 new_bon / new_bon_front / new_bon_back（增量式历史池）
-    # 当 skip_random_ut=True 时，跳过 random UT 执行与聚类（避免重复 512）
+
     if (not skip_random_ut) and compute_new_bon:
         _compute_new_bon_with_history(data, args, print_results=True)
     return data
 
 
-
-
-
+# Random-UT BoN with current and historical code pools.
 def _compute_new_bon_with_history(data, args, *, print_results=True):
-    """
-    计算并打印 new_bon / new_bon_front / new_bon_back。
-    - new_bon: 仅当前 top-pass 候选聚类
-    - new_bon_front: 历史优先（旧代码优先）
-    - new_bon_back: 当前优先（新代码优先）
-    逻辑：在 case/test 执行完成后，对当前代码和历史池代码
-    执行一轮 random UT（16 条）并一次性聚类选码。
-    同时保存当前/历史的 random UT 执行矩阵和聚类信息。
-    """
-    # 延迟导入，避免循环依赖
+
     try:
         from evaluation import metrics as metrics_mod
     except Exception:
         import metrics as metrics_mod
 
-    # === 基础配置（与 metrics 对齐） ===
+
     use_random = bool(getattr(args, "use_random_ut_cluster", True))
     if not use_random:
         return None
@@ -475,33 +432,33 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         args, "random_ut_placeholder", "We can not extract the input in the output. "
     )
 
-    # === 初始化历史池（front/back 各一套：code -> info） ===
+
     if not hasattr(args, "_random_ut_history_front") or args._random_ut_history_front is None:
         args._random_ut_history_front = [dict() for _ in range(len(data))]
     if not hasattr(args, "_random_ut_history_back") or args._random_ut_history_back is None:
         args._random_ut_history_back = [dict() for _ in range(len(data))]
-    # 题目数变化时重置
+
     if len(args._random_ut_history_front) != len(data):
         args._random_ut_history_front = [dict() for _ in range(len(data))]
     if len(args._random_ut_history_back) != len(data):
         args._random_ut_history_back = [dict() for _ in range(len(data))]
 
-    # === 统一准备 random_case_input_selected（与 metrics 同逻辑：截断/占位） ===
+
     for i in range(len(data)):
         raw_inputs = data[i].get("random_case_input", []) or []
         data[i]["random_case_input_selected"] = metrics_mod._select_random_inputs(
             raw_inputs, random_ut_select_count, random_ut_placeholder
         )
 
-    # === 统一执行：一次性跑所有题目/代码/UT ===
-    combined_codes_by_task = []  # 每题的当前+历史代码列表
-    history_codes_by_task = []  # 每题历史代码列表（去重后）
-    exec_matrix_by_task = []  # 每题的执行矩阵
 
-    code_list = []  # 展开后的代码
-    input_list = []  # 展开后的输入
-    time_limit_list = []  # 展开后的时限
-    position_list = []  # 输出位置映射
+    combined_codes_by_task = []
+    history_codes_by_task = []
+    exec_matrix_by_task = []
+
+    code_list = []
+    input_list = []
+    time_limit_list = []
+    position_list = []
 
     for i in range(len(data)):
         current_codes = data[i].get("generated_code", []) or []
@@ -519,7 +476,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         combined_codes_by_task.append(combined_codes)
         history_codes_by_task.append(history_codes)
         exec_matrix_by_task.append([["" for _ in range(len(random_inputs))] for _ in range(len(combined_codes))])
-        # 记录历史池（用于落盘分析；当前轮内不一定参与）
+
         data[i]["random_ut_history_codes_front"] = list(args._random_ut_history_front[i].keys())
         data[i]["random_ut_history_codes_back"] = list(args._random_ut_history_back[i].keys())
         data[i]["random_ut_history_codes_used"] = list(history_codes)
@@ -543,24 +500,24 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         for out, (task_i, code_idx, ut_idx) in zip(outputs, position_list):
             exec_matrix_by_task[task_i][code_idx][ut_idx] = out
 
-    # === 回填执行矩阵（当前与历史分开保存） ===
+
     for i in range(len(data)):
         current_len = len(data[i].get("generated_code", []) or [])
         all_rows = exec_matrix_by_task[i]
-        # 当前代码的 random UT 输出
+
         data[i]["random_case_exe_results_1"] = all_rows[:current_len]
         data[i]["random_case_bool_table_rows_1"] = [
             "".join("0" if metrics_mod._is_error_output(x) else "1" for x in row)
             for row in all_rows[:current_len]
         ]
-        # 历史代码的 random UT 输出
+
         data[i]["random_case_exe_results_history_1"] = all_rows[current_len:]
         data[i]["random_case_bool_table_rows_history_1"] = [
             "".join("0" if metrics_mod._is_error_output(x) else "1" for x in row)
             for row in all_rows[current_len:]
         ]
 
-    # === 额外执行：历史代码在 test_input 上跑一遍（仅补缺失 test_row） ===
+
     history_test_bool_rows_by_task = [[] for _ in range(len(data))]
     hist_code_list = []
     hist_input_list = []
@@ -593,7 +550,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
             args.num_chunks,
             args.exe_verbose,
         )
-        # 还原成按题目的输出行
+
         hist_rows_raw = {}
         for out, (task_i, code_idx, ut_idx) in zip(hist_outputs, hist_position_list):
             hist_rows_raw.setdefault((task_i, code_idx), []).append(out)
@@ -610,7 +567,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
     for i in range(len(data)):
         data[i]["history_test_bool_rows_1"] = history_test_bool_rows_by_task[i]
 
-    # === 聚类辅助（带优先级） ===
+
     def _dedupe_indices(indices):
         seen = set()
         out = []
@@ -622,7 +579,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         return out
 
     def _candidate_stats(outputs, cluster_indices, selected_local, pass_counts, error_masks, candidate_indices):
-        # 计算中心点的聚类指标
+
         match_sum = 0
         for j in cluster_indices:
             if j == selected_local:
@@ -681,7 +638,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
             return None, best_cluster, None
         return candidate_indices[best_center], best_cluster, error_masks
 
-    # === 主循环：逐题选码并统计 ===
+
     new_score = 0
     new_front_score = 0
     new_back_score = 0
@@ -726,7 +683,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         new_front_index = best_code_index
         new_back_index = best_code_index
 
-        # new_bon（只用当前 top_candidates）
+
         new_info = {
             "source": "top_pass",
             "top_candidates": top_candidates,
@@ -770,7 +727,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         hist_front_indices = [idx for idx, code in enumerate(combined_codes) if code in args._random_ut_history_front[i]]
         hist_back_indices = [idx for idx, code in enumerate(combined_codes) if code in args._random_ut_history_back[i]]
 
-        # new_bon_front：历史优先
+
         front_info = {
             "source": "history_first",
             "top_candidates": top_candidates,
@@ -806,7 +763,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
                         "pass_count": pass_cnt,
                     })
 
-        # new_bon_back：当前优先
+
         back_info = {
             "source": "current_first",
             "top_candidates": top_candidates,
@@ -864,7 +821,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
             new_back_score += 1
         total += 1
 
-        # 更新历史池（互不混用，缓存 test_row/pass_count 供后续轮次复用）
+
         if new_front_index < len(combined_codes):
             code = combined_codes[new_front_index]
             if code:
@@ -889,7 +846,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
                 f"New_BoN (current): {new_bon:.4f} | New_BoN_front: {new_bon_front:.4f} | New_BoN_back: {new_bon_back:.4f}",
                 flush=True,
             )
-        # 缓存到 args，供 metrics 直接打印，避免再次执行 random UT
+
         args._new_bon_cached = {
             "new_bon": new_bon,
             "new_bon_front": new_bon_front,
@@ -903,14 +860,9 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         }
     return None
 
+# Case-only execution path used inside generation and self-play rounds.
 def run_all_executions_generate(data, args):
-    """
-    执行所有生成的代码和测试用例。
-    
-    只负责：根据 data 里的 generated_code / case_input / test_input 执行代码，
-    填充 case_exe_results / test_exe_results / *_bool_table。
-    """
-    print(f"✓ 读取生成结果: {len(data)} 条数据", flush=True)
+    print(f"✓ Loaded generation results: {len(data)} records", flush=True)
 
     case_index_list = []
     case_position_list = []
@@ -933,7 +885,7 @@ def run_all_executions_generate(data, args):
         data[i].setdefault("test_output", [])
         data[i].setdefault("test_time_limit", 1)
         _limit_case_fields(data[i], max_cases)
-        # case
+
         if len(data[i]["case_input"]) * len(data[i]["generated_code"]) == 0:
             data[i]["case_exe_results"] = None
             data[i]["case_bool_table"] = None
@@ -943,7 +895,7 @@ def run_all_executions_generate(data, args):
             data[i]["case_exe_results"] = [["" for _ in range(n_col)] for _ in range(n_row)]
             data[i]["case_bool_table"] = np.full((n_row, n_col), False, dtype=bool)
 
-        # test
+
         if len(data[i]["test_input"]) * len(data[i]["generated_code"]) == 0:
             data[i]["test_exe_results"] = None
             data[i]["test_bool_table"] = None
@@ -955,15 +907,15 @@ def run_all_executions_generate(data, args):
 
         data_i = data[i].copy()
 
-        # case 执行列表（模型生成 UT）
+
         for j in range(len(data_i["generated_code"])):
             for k in range(len(data_i["case_input"])):
                 code = data_i["generated_code"][j]
                 case_input = data_i["case_input"][k]
                 case_output = data_i["case_output"][k]
                 
-                # 如果 UT 输入或输出为空（被过滤掉了），则跳过执行
-                # 只有在 plansearch 模式下，且使用了投票，且设置了自洽性数量 > 1 才跳过
+
+
                 if args.generation_mode == "plansearch":
                     if case_input is None or case_output is None:
                         continue
@@ -973,34 +925,17 @@ def run_all_executions_generate(data, args):
                 case_output_list.append(case_output)
                 if "test_time_limit" in data_i.keys():
                     case_time_limit_list.append(data_i["test_time_limit"])
-                    # case_time_limit_list.append(5)
+
                 else:
                     case_time_limit_list.append(1)
                     print("No time limit provided!")
                 case_index_list.append(i)
                 case_position_list.append((j, k))
 
-        # test 执行列表（真实 UT）
-        # max_k = min(len(data_i["test_input"]), args.max_test)
-        # for j in range(len(data_i["generated_code"])):
-        #     for k in range(max_k):
-        #         code = data_i["generated_code"][j]
-        #         test_input = data_i["test_input"][k]
-        #         test_output = data_i["test_output"][k]
-        #         test_code_list.append(code)
-        #         test_input_list.append(test_input)
-        #         test_output_list.append(test_output)
-        #         if "test_time_limit" in data_i.keys():
-        #             test_time_limit_list.append(data_i["test_time_limit"])
-        #         else:
-        #             test_time_limit_list.append(1)
-        #             print("No time limit provided!")
-        #         test_index_list.append(i)
-        #         test_position_list.append((j, k))
 
-    print(f"准备执行测试用例，总共 {len(case_code_list)} 条", flush=True)
+    print(f"Preparing to execute generated tests: {len(case_code_list)} jobs", flush=True)
 
-    # 执行模型生成的 UT（BoN 场景才需要）
+
     if not args.single_eval:
         cprint("start execution for generated unit tests", "green")
         case_exe_results = run_scripts_with_chunk(
@@ -1014,18 +949,7 @@ def run_all_executions_generate(data, args):
     else:
         case_exe_results = []
 
-    # 执行真实 UT
-    # cprint("start execution for ground-truth unit tests", "green")
-    # test_exe_results = run_scripts_with_chunk(
-    #     test_code_list,
-    #     test_input_list,
-    #     test_time_limit_list,
-    #     args.num_chunks,
-    #     args.exe_verbose,
-    # )
-    # cprint("execution job done!", "green")
 
-    # 回填 case
     for i in range(len(case_index_list)):
         index_i = case_index_list[i]
         j, k = case_position_list[i]
@@ -1035,13 +959,5 @@ def run_all_executions_generate(data, args):
                 case_exe_results[i], case_output_list[i]
             )
 
-    # 回填 test
-    # for i in range(len(test_index_list)):
-    #     index_i = test_index_list[i]
-    #     j, k = test_position_list[i]
-    #     data[index_i]["test_exe_results"][j][k] = test_exe_results[i]
-    #     data[index_i]["test_bool_table"][j][k] = test_if_eq(
-    #         test_exe_results[i], test_output_list[i]
-    #     )
 
     return data

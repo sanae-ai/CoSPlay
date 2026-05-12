@@ -171,9 +171,8 @@ class UsageTracker:
                     {
                         "text": item_text,
                         "prompt_tokens": 0.0,
-                        # For observation/idea style stages, completion token usage is
-                        # counted as the actually used text itself, matching the
-                        # "used output tokens" convention.
+
+
                         "completion_tokens": float(self._count_tokens(item_text)),
                         "generated_round": round_key,
                         "consumed_round": None,

@@ -101,15 +101,11 @@ GENERATION_MODE="${GENERATION_MODE:-plansearch}"
 EVAL_MODE="${EVAL_MODE:-bon}"
 
 # Final method configuration. These flags describe the reported CosPlay setup:
-# second-stage reasoning, self-play, idea-level attack unit tests, and all
-# second-order observations enabled.
+# direct second-order-observation code generation, self-play, idea-level attack
+# unit tests, and all second-order observations enabled.
 MAX_OBS="${MAX_OBS:-4}"
-USE_PSEUDOCODE_MODULE="${USE_PSEUDOCODE_MODULE:-False}"
-USE_FIRST_ORDER_OBS="${USE_FIRST_ORDER_OBS:-True}"
 PROMPT_ROLE_MODE="${PROMPT_ROLE_MODE:-3}"
-REFLECTION_VISIBILITY="${REFLECTION_VISIBILITY:-True}"
 ABLATION="${ABLATION:-only_stage2}"
-USE_CRITIQUE_PLAN="${USE_CRITIQUE_PLAN:-False}"
 USE_ALL_SECOND_ORDER_OBS="${USE_ALL_SECOND_ORDER_OBS:-True}"
 USE_IDEA_ATTACK_UT="${USE_IDEA_ATTACK_UT:-True}"
 SELF_CONSISTENCY_NUM="${SELF_CONSISTENCY_NUM:-4}"
@@ -187,12 +183,8 @@ for suffix in "${RUN_SUFFIXES[@]}"; do
           --eval_mode "${EVAL_MODE}" \
           --pass_at_k_list "${PASS_AT_K_LIST}" \
           --max_obs "${MAX_OBS}" \
-          --use_pseudocode_module "${USE_PSEUDOCODE_MODULE}" \
-          --use_first_order_obs "${USE_FIRST_ORDER_OBS}" \
           --prompt_role_mode "${PROMPT_ROLE_MODE}" \
-          --reflection_visibility "${REFLECTION_VISIBILITY}" \
           --ablation "${ABLATION}" \
-          --use_critique_plan "${USE_CRITIQUE_PLAN}" \
           --use_all_second_order_obs "${USE_ALL_SECOND_ORDER_OBS}" \
           --self_consistency_num "${SELF_CONSISTENCY_NUM}" \
           --ut_vote_by_code "${UT_VOTE_BY_CODE}" \

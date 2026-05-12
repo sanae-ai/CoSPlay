@@ -95,55 +95,6 @@ def get_stage2_prompt(problem, first_order_observations, tmpl):
     )
 
 
-def get_stage3_prompt(problem, first_order_observations, second_order_observations, tmpl):
-    """
-    生成第三阶段 Prompt：自然语言解法。
-    """
-    return Template(tmpl).render(
-        problem=problem,
-        second_order_observations=second_order_observations,
-    )
-
-
-def get_stage3_critique_prompt(
-    problem,
-    first_order_observations,
-    second_order_observations,
-    solution_plan,
-    tmpl,
-):
-    """
-    生成第三阶段（变体）Prompt：批判与替代解法。
-    """
-    return Template(tmpl).render(
-        problem=problem,
-        first_order_observations=first_order_observations,
-        second_order_observations=second_order_observations,
-        solution_plan=solution_plan,
-    )
-
-## 生成第 3.75 阶段 Prompt：从自然语言想法生成伪代码。
-def get_stage3_75_prompt(problem, solution_plan, tmpl):
-    """
-    生成第三阶段 3.75 Prompt：从自然语言解法生成伪代码。
-    """
-    return Template(tmpl).render(
-        problem=problem,
-        solution_plan=solution_plan,
-    )
-
-def get_stage4_prompt(problem, solution_plan, tmpl, special_requirements):
-    """
-    生成第四阶段 Prompt：最终代码生成。
-    """
-    return Template(tmpl).render(
-        language="python",
-        special_requirements=special_requirements,
-        problem=problem,
-        solution_plan=solution_plan,
-    )
-
-
 def init_eval_fields_for_data(data):
     """
     把每道题里用到的公共字段初始化一下，避免在多个函数里重复写。
@@ -163,10 +114,9 @@ def init_eval_fields_for_data(data):
         data[i]["case_output_original"] = []
         data[i]["case_is_valid"] = []
 
-        # PlanSearch / multi-stage 会用到的中间结果
+        # PlanSearch / multi-stage intermediate observations.
         data[i]["stage1_observations"] = None
         data[i]["stage2_observations"] = None
-        data[i]["solution_plan"] = None
 
 
 def build_code_prompts_original_eval(data, args):
@@ -237,9 +187,6 @@ def build_code_prompts_plansearch(data, args):
         data[i]["code_generation_prompts"] = {
             "stage1": prompt_stage1,
             "stage2_template": problem,
-            "stage3_template": problem,
-            "stage3_75_template": problem,
-            "stage4_template": problem,
         }
 
         stage1_prompts.append(prompt_stage1)

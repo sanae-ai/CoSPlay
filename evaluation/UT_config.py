@@ -24,16 +24,14 @@ def splicing_mode(mode: str) -> str:
         return "is the intelligent observation:"
     elif mode == "only_stage1":
         return "is the observation:"
-    elif mode == "natural_desciption":
-        return "is the natural-language solution plan:"
+    raise ValueError(f"Unsupported UT idea mode: {mode}")
 
 def splicing_text(mode: str) -> str:
     if mode == "only_stage2":
         return "an observation"
     elif mode == "only_stage1":
         return "an observation"
-    elif mode == "natural_desciption":
-        return "a natural-language solution plan"
+    raise ValueError(f"Unsupported UT idea mode: {mode}")
 
 ## ========== 下面是生成prompt ========== ##
 
@@ -85,7 +83,7 @@ Your task is to generate a strict "Unit Test Input" based on a provided "Attack 
 To ensure the generated input is valid and effective, follow these steps strictly:
 
 1.  **Analyze Constraints & Hidden Rules**:
-    *   Identify all explicit constraints (e.g., $1 \le N \le 10^5$, sum of weights < $10^9$, the string should be re).
+    *   Identify all explicit constraints (e.g., $1 \\le N \\le 10^5$, sum of weights < $10^9$, the string should be re).
     *   **Crucial**: Identify *implicit* constraints in the text (e.g., "distinct integers", "connected graph", "permutation", "tree structure").
     *   List these constraints clearly in your explanation.
 

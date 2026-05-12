@@ -153,17 +153,12 @@ def parse_args():
     parser.add_argument("--gpu_groups", type=ast.literal_eval, default=ec.gpu_groups)
     parser.add_argument("--mode", type=str, default=ec.mode)
 
-    parser.add_argument("--use_first_order_obs", type=str2bool, default=getattr(ec, "use_first_order_obs", False))
-    parser.add_argument("--use_pseudocode_module", type=str2bool, default=getattr(ec, "use_pseudocode_module", True))
     parser.add_argument("--prompt_role_mode", type=int, default=getattr(ec, "prompt_role_mode", 0))
-    parser.add_argument("--reflection_visibility", type=str2bool, default=getattr(ec, "reflection_visibility", True))
-    # parser.add_argument("--use_critique_plan", type=str2bool, default=getattr(ec, "use_critique_plan", True))
     parser.add_argument("--use_multi_stage_generation", type=str2bool, default=getattr(ec, "use_multi_stage_generation", False))
     parser.add_argument("--use_original_resample", type=str2bool, default=getattr(ec, "use_original_resample", False))
     parser.add_argument("--max_obs", type=int, default=ec.max_obs)
     parser.add_argument("--max_global_rounds", type=int, default=getattr(ec, "max_global_rounds", 50))
     parser.add_argument("--ablation", type=str, default=getattr(ec, "ablation", "only_stage1"))
-    parser.add_argument("--use_critique_plan", type=str2bool, default=getattr(ec, "use_critique_plan", False))
     parser.add_argument("--use_all_second_order_obs", type=str2bool, default=getattr(ec, "use_all_second_order_obs", False))
     parser.add_argument("--use_idea_attack_ut", type=str2bool, default=getattr(ec, "use_idea_attack_ut", False))
     # parser.add_argument("--use_idea_attack_ut_step", type=str, default=getattr(ec, "use_idea_attack_ut_step", "default"))
@@ -249,20 +244,10 @@ def parse_args():
         # 1. 加载固定 Prompts
         args.system_prompts_stage1 = prompt_data["stage1"]
         args.system_prompts_stage2 = prompt_data["stage2"]
-        args.system_prompts_stage3 = prompt_data["stage3"]
-        args.system_prompts_stage3_75 = prompt_data["stage3_75"]
         args.system_prompts = prompt_data["original"]
         args.system_case_prompts = prompt_data["case"]
         args.special_requirements = prompt_data["special_requirements"]
-        
-        # 2. 加载条件 Prompts (Bool 开关)
-        # 根据命令行传入的 reflection_visibility (True/False) 选择
-        args.system_prompts_stage3_critique = prompt_data["stage3_critique"][args.reflection_visibility]
-        
-        # 根据命令行传入的 use_pseudocode_module (True/False) 选择
-        args.system_prompts_stage4 = prompt_data["stage4"][args.use_pseudocode_module]
-        if args.use_pseudocode_module == False:
-            args.system_prompts_stage4_ablation_only_stage = prompt_data["stage4"][args.use_pseudocode_module][args.ablation]
+        args.system_prompts_stage4_ablation_only_stage = prompt_data["stage4"][args.ablation]
         
         cprint(f"[INFO] Loaded Prompts for Mode {args.prompt_role_mode}", "green")
         

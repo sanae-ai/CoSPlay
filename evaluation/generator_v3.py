@@ -10,10 +10,6 @@ import re
 from itertools import combinations
 from prompts import (
     get_stage2_prompt,
-    get_stage3_prompt,
-    get_stage3_critique_prompt,
-    get_stage3_75_prompt,
-    get_stage4_prompt,
 )
 from UT_config import (
     get_ut_idea_prompt,
@@ -624,15 +620,14 @@ def run_generation_plansearch(
     print(
         "执行 PlanSearch 分阶段代码生成（多题并行版）: "
         "Stage1(一阶观察) → Stage2(二阶观察) → "
-        "Stage3(解法) → Critique → [Shuffle & Select] → Stage4(代码)",
+        "[Shuffle & Select] → Code",
         flush=True,
     )
 
-    # 每题的最终代码 / 自然语言解法 / 状态
+    # 每题的最终代码 / 状态
     codes_per_problem = [[] for _ in range(num)]          # 存的是已经 wrap 过的 ```python 块
-    solution_plans_per_problem = [[] for _ in range(num)] # 自然语言解法（包含批判解）
 
-    # 记录每个题目下，所有 (观察子集 + 自然语言解法 + 对应代码) 的详细信息
+    # 记录每个题目下，所有 (观察子集 + 对应代码) 的详细信息
     plansearch_records_per_problem = [[] for _ in range(num)]
 
     failed_stage1_rounds = [0] * num
@@ -711,13 +706,84 @@ def run_generation_plansearch(
             print("  [Stage1] 本轮全军覆没（无有效观察），进入下一轮重试", flush=True)
             continue
         
-        if args.ablation != "only_stage1" and args.ablation != "only_stage2":
-            # ==============================================================================
-            # Stage 2: 构造子集 -> 生成二阶观察 (Second-Order Observations)
-            # ==============================================================================
+        if args.ablation not in {"only_stage1", "only_stage2"}:
+            raise ValueError(f"Unsupported ablation: {args.ablation}. Use 'only_stage1' or 'only_stage2'.")
+
+        if args.ablation == "only_stage1":
+            print(f"  [Stage4] 准备生成代码: 使用一阶观察直接生成（构造子集）...", flush=True)
+            
+            all_stage4_tasks = []
+            for idx, obs_list in first_order_obs.items():
+                c1_subsets = build_observation_subsets(obs_list, max_subset_size=2)
+                
+                problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
+                
+                for c1 in c1_subsets:
+                    first_subset_text = format_observations(c1)
+                    
+                    record = {
+                        "global_round": global_round,
+                        "first_obs_for_branch": c1,
+                        "second_obs_for_leaf": [],
+                        "first_obs_for_leaf_str": first_subset_text,
+                        "second_obs_for_leaf_str": "",
+                        "plan_type": "only_stage1",
+                        "plan_text": first_subset_text,
+                        "codes": [],
+                    }
+                    
+                    p = get_stage2_prompt(
+                        problem_template,
+                        first_subset_text,
+                        args.system_prompts_stage4_ablation_only_stage,
+                    )
+                    all_stage4_tasks.append({
+                        "idx": idx,
+                        "prompt": p,
+                        "record": record
+                    })
+
+            tasks_by_problem = {idx: [] for idx in active_indices}
+            for task in all_stage4_tasks:
+                if task["idx"] in tasks_by_problem:
+                    tasks_by_problem[task["idx"]].append(task)
+            
+            final_stage4_prompts = []
+            final_stage4_meta = []
+            final_stage4_records = []
+            
+            for idx in active_indices:
+                current_count = len(codes_per_problem[idx])
+                needed = args.k_code - current_count
+                
+                if needed <= 0:
+                    continue
+                
+                available_tasks = tasks_by_problem[idx]
+                random.shuffle(available_tasks)
+                selected_tasks = available_tasks[:needed]
+                
+                for t in selected_tasks:
+                    final_stage4_prompts.append(t["prompt"])
+                    final_stage4_meta.append(t["idx"])
+                    final_stage4_records.append(t["record"])
+                    
+                    # 把记录加到 plansearch_records
+                    if t["record"] is not None:
+                        plansearch_records_per_problem[t["idx"]].append(t["record"])
+                
+                print(f"    - 题目 {idx}: 使用一阶观察子集, 现有 {len(available_tasks)} 个想法, 选取 {len(selected_tasks)} 个生成代码", flush=True)
+            
+            if not final_stage4_prompts:
+                print("  [Info] 没有任务需要执行 Stage 4 (可能已满足 k_code)，跳过", flush=True)
+                continue
+        
+        elif args.ablation == "only_stage2":
+            print(f"  [Stage4] 准备生成代码: 使用二阶观察直接生成（构造子集）...", flush=True)
+            
             stage2_tasks = []
             for idx, obs_list in first_order_obs.items():
-                c1_subsets = build_observation_subsets(obs_list, max_subset_size=2, include_empty=args.is_empty)
+                c1_subsets = build_observation_subsets(obs_list, max_subset_size=2)
                 for c1 in c1_subsets:
                     stage2_tasks.append({
                         "idx": idx,
@@ -725,10 +791,10 @@ def run_generation_plansearch(
                     })
 
             if not stage2_tasks:
-                print("  [Stage2] 无法构造一阶子集，跳过本轮", flush=True)
+                print("  [WARN] 无法构造一阶子集，跳过本轮", flush=True)
                 continue
 
-            print(f"  [Stage2] 对 {len(stage2_tasks)} 条路径生成二阶观察...", flush=True)
+            print(f"  [Stage2临时] 对 {len(stage2_tasks)} 条路径生成二阶观察...", flush=True)
 
             stage2_prompts = []
             for task in stage2_tasks:
@@ -745,66 +811,59 @@ def run_generation_plansearch(
                 stage2_prompts.append(p)
 
             stage2_outputs = runner.generate(stage2_prompts)
-
-            # --- LOGGING STAGE 2 ---
-            log_llm_interaction(f"Stage 2 (Round {global_round})", stage2_prompts, stage2_outputs, args, stage2_tasks)
-            # -----------------------
-
-            # 解析二阶观察，构建叶子节点任务
-            leaf_tasks = [] 
-            # 记录本轮已生成的任务数，避免生成过多
-            tasks_count_per_problem = {idx: 0 for idx in active_indices}
             stage2_items_by_call = []
+            
+            log_llm_interaction(f"Stage 2 临时 (Round {global_round})", stage2_prompts, stage2_outputs, args, stage2_tasks)
+
+            all_stage4_tasks = []
             
             for task, out in zip(stage2_tasks, stage2_outputs):
                 idx = task["idx"]
-                if args.use_all_second_order_obs:
-                    second_order_obs_list = parse_observations_stage2(out)
-                else:
-                    second_order_obs_list = parse_observations(out, max_obs=args.max_obs)
+                second_order_obs_list = parse_observations_stage2(out)
                 stage2_items_by_call.append(second_order_obs_list)
-                
-                # 计算还需要多少个代码
-                needed = args.k_code - len(codes_per_problem[idx])
-                # 如果本轮已经积攒了足够的任务，就跳过后续的
-                if tasks_count_per_problem[idx] >= needed:
-                    continue
 
-                if args.use_all_second_order_obs:
-                    # 直接使用每个二阶观察，不构建子集
-                    if not second_order_obs_list:
-                        continue 
-                    for second_obs in second_order_obs_list:
-                        if tasks_count_per_problem[idx] >= needed:
-                            break
-                            
-                        leaf_tasks.append({
-                            "idx": idx,
-                            "first_obs_for_branch": task["first_obs_for_branch"],
-                            "second_obs_for_leaf": second_obs, 
-                            "first_obs_for_leaf_str": task["first_subset_text"], 
-                            "second_obs_for_leaf_str":second_obs  # 直接使用单个观察
-                        })
-                        tasks_count_per_problem[idx] += 1
-                else:
-                    # 原始逻辑：构建二阶观察子集
-                    if not second_order_obs_list:
-                        continue 
+                # Save observations to data for UT generation
+                if data[idx].get("stage2_observations") is None:
+                    data[idx]["stage2_observations"] = ""
+                if data[idx].get("stage2_observations_list") is None:
+                    data[idx]["stage2_observations_list"] = []
                 
-                    c2_subsets = build_observation_subsets(second_order_obs_list, max_subset_size=2)
+                # Aggregate the list form for granular UT generation
+                data[idx]["stage2_observations_list"].extend(second_order_obs_list)
+
+                for obs in second_order_obs_list:
+                    data[idx]["stage2_observations"] += f"- {obs}\n"
+                
+                if not second_order_obs_list:
+                    continue
+                
+                # 使用所有二阶观察，而不是构建子集
+                
+                problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
+                
+                for second_order_obs in second_order_obs_list:
+                    second_obs_text = second_order_obs
+                    record = {
+                        "global_round": global_round,
+                        "first_obs_for_branch": task["first_obs_for_branch"],
+                        "second_obs_for_leaf": second_order_obs,  # 保存所有二阶观察
+                        "first_obs_for_leaf_str": "",
+                        "second_obs_for_leaf_str": second_obs_text,
+                        "plan_type": "only_stage2",
+                        "plan_text": second_obs_text,
+                        "codes": [],
+                    }
                     
-                    for c2 in c2_subsets:
-                        if tasks_count_per_problem[idx] >= needed:
-                            break
-                            
-                        leaf_tasks.append({
-                            "idx": idx,
-                            "first_obs_for_branch": task["first_obs_for_branch"],
-                            "second_obs_for_leaf": c2,
-                            "first_obs_for_leaf_str": task["first_subset_text"], 
-                            "second_obs_for_leaf_str": format_observations(c2)
-                        })
-                        tasks_count_per_problem[idx] += 1
+                    p = get_stage2_prompt(
+                        problem_template,
+                        second_obs_text,
+                        args.system_prompts_stage4_ablation_only_stage,
+                    )
+                    all_stage4_tasks.append({
+                        "idx": idx,
+                        "prompt": p,
+                        "record": record
+                    })
             reserve_item_usage(
                 args,
                 [task["idx"] for task in stage2_tasks],
@@ -815,285 +874,22 @@ def run_generation_plansearch(
                 stage2_items_by_call,
             )
 
-            if not leaf_tasks:
-                print("  [WARN] 本轮未生成任何有效的叶子路径 (C1->C2)，跳过本轮", flush=True)
-                continue
-
-            # ==============================================================================
-            # Stage 3: 生成自然语言解法 (Solution Plans)
-            # ==============================================================================
-            print(f"  [Stage3] 对 {len(leaf_tasks)} 个叶子生成 Solution Plans...", flush=True)
-
-            stage3_prompts = []
-            for leaf in leaf_tasks:
-                idx = leaf["idx"]
-                problem_template = data[idx]["code_generation_prompts"]["stage3_template"]
-                
-                if args.use_first_order_obs:
-                    prompt_obs1_str = leaf["first_obs_for_leaf_str"]
-                else:
-                    prompt_obs1_str = ""
-
-                p = get_stage3_prompt(
-                    problem_template,
-                    prompt_obs1_str,
-                    leaf["second_obs_for_leaf_str"],
-                    args.system_prompts_stage3,
-                )
-                stage3_prompts.append(p)
-
-            stage3_outputs = runner.generate(stage3_prompts)
-            record_direct_usage(
-                args,
-                [leaf["idx"] for leaf in leaf_tasks],
-                stage3_prompts,
-                stage3_outputs,
-                "stage3_solution_plan",
-                usage_round_key,
-            )
-            
-            # --- LOGGING STAGE 3 ---
-            log_llm_interaction(f"Stage 3 - Solution (Round {global_round})", stage3_prompts, stage3_outputs, args, leaf_tasks)
-            # -----------------------
-
-            for leaf, sol in zip(leaf_tasks, stage3_outputs):
-                leaf["solution_plan"] = sol
-                idx = leaf["idx"]
-                solution_plans_per_problem[idx].append(sol)
-
-                record_solution = {
-                    "global_round": global_round,
-                    "first_obs_for_branch": leaf["first_obs_for_branch"],
-                    "second_obs_for_leaf": leaf["second_obs_for_leaf"],
-                    "first_obs_for_leaf_str": leaf["first_obs_for_leaf_str"],
-                    "second_obs_for_leaf_str": leaf["second_obs_for_leaf_str"],
-                    "plan_type": "solution",
-                    "plan_text": sol,
-                    "pseudocode": None,
-                    "codes": [],
-                    "use_pseudocode_module": args.use_pseudocode_module,
-                    "reflection_visibility": args.reflection_visibility,
-                    "use_first_order_obs": args.use_first_order_obs,
-                }
-                plansearch_records_per_problem[idx].append(record_solution)
-                leaf["solution_record"] = record_solution
-
-            # ==============================================================================
-            # Stage 3.5: 生成批判与替代解法 (Critique Plans)
-            # ==============================================================================
-            if args.use_critique_plan:
-                print(f"  [Stage3.5] 对 {len(leaf_tasks)} 个叶子生成 Critique Plans...", flush=True)
-
-                stage3_crit_prompts = []
-                for leaf in leaf_tasks:
-                    idx = leaf["idx"]
-                    problem_template = data[idx]["code_generation_prompts"]["stage3_template"]
-
-                    if args.use_first_order_obs:
-                        prompt_obs1_str = leaf["first_obs_for_leaf_str"]
-                    else:
-                        prompt_obs1_str = ""
-
-                    if args.reflection_visibility:
-                        obs1_for_critique = prompt_obs1_str
-                        obs2_for_critique = leaf["second_obs_for_leaf_str"]
-                    else:
-                        obs1_for_critique = ""
-                        obs2_for_critique = ""
-
-                    p = get_stage3_critique_prompt(
-                        problem_template,
-                        obs1_for_critique,
-                        obs2_for_critique,
-                        leaf["solution_plan"],
-                        args.system_prompts_stage3_critique,
-                    )
-                    stage3_crit_prompts.append(p)
-
-                stage3_crit_outputs = runner.generate(stage3_crit_prompts)
-                record_direct_usage(
-                    args,
-                    [leaf["idx"] for leaf in leaf_tasks],
-                    stage3_crit_prompts,
-                    stage3_crit_outputs,
-                    "stage3_critique_plan",
-                    usage_round_key,
-                )
-                
-                # --- LOGGING STAGE 3.5 ---
-                log_llm_interaction(f"Stage 3.5 - Critique (Round {global_round})", stage3_crit_prompts, stage3_crit_outputs, args, leaf_tasks)
-                # -------------------------
-
-                for leaf, crit in zip(leaf_tasks, stage3_crit_outputs):
-                    leaf["crit_plan"] = crit
-                    idx = leaf["idx"]
-                    solution_plans_per_problem[idx].append(crit)
-
-                    record_crit = {
-                        "global_round": global_round,
-                        "first_obs_for_branch": leaf["first_obs_for_branch"],
-                        "second_obs_for_leaf": leaf["second_obs_for_leaf"],
-                        "first_obs_for_leaf_str": leaf["first_obs_for_leaf_str"],
-                        "second_obs_for_leaf_str": leaf["second_obs_for_leaf_str"],
-                        "plan_type": "critique",
-                        "plan_text": crit,
-                        "pseudocode": None,
-                        "codes": [],
-                        "use_pseudocode_module": args.use_pseudocode_module,
-                        "reflection_visibility": args.reflection_visibility,
-                        "use_first_order_obs": args.use_first_order_obs,
-                    }
-                    plansearch_records_per_problem[idx].append(record_crit)
-                    leaf["critique_record"] = record_crit
-            else:
-                print(f"  [Stage3.5] Critique Plan 已禁用，跳过本阶段", flush=True)
-
-            # ==============================================================================
-            # Stage 3.75:生成伪代码 (Solution Plan -> Pseudocode)
-
-            if args.use_pseudocode_module:
-                print(f"  [Stage3.75] 准备生成伪代码: 收集所有 自然语言解法 ...", flush=True)
-                stage3_75_solution_prompts = []
-                stage3_75_critique_prompts = []
-
-                for leaf in leaf_tasks:
-                    idx = leaf["idx"]
-                    problem_template = data[idx]["code_generation_prompts"]["stage3_75_template"]
-
-                    if "solution_plan" in leaf:
-                        p = get_stage3_75_prompt(
-                            problem_template,
-                            leaf["solution_plan"],
-                            args.system_prompts_stage3_75,
-                        )
-                        stage3_75_solution_prompts.append((leaf, p))
-
-                    if "crit_plan" in leaf:
-                        p = get_stage3_75_prompt(
-                            problem_template,
-                            leaf["crit_plan"],
-                            args.system_prompts_stage3_75,
-                        )
-                        stage3_75_critique_prompts.append((leaf, p))
-
-                solution_count = len(stage3_75_solution_prompts)
-                all_pseudocode_tasks_meta = [l[0] for l in stage3_75_solution_prompts] + [l[0] for l in stage3_75_critique_prompts]
-                all_pseudocode_prompts = [p for _, p in stage3_75_solution_prompts] + [p for _, p in stage3_75_critique_prompts]
-                
-                pseudocode_outputs = runner.generate(all_pseudocode_prompts)
-                record_direct_usage(
-                    args,
-                    [leaf["idx"] for leaf in all_pseudocode_tasks_meta],
-                    all_pseudocode_prompts,
-                    pseudocode_outputs,
-                    "stage3_75_pseudocode",
-                    usage_round_key,
-                )
-                
-                # --- LOGGING STAGE 3.75 ---
-                log_llm_interaction(f"Stage 3.75 - Pseudocode (Round {global_round})", all_pseudocode_prompts, pseudocode_outputs, args, all_pseudocode_tasks_meta)
-                # --------------------------
-
-                for i, (leaf, _) in enumerate(stage3_75_solution_prompts):
-                    pseudocode_text = pseudocode_outputs[i]
-                    leaf["pseudocode"] = pseudocode_text
-                    if "solution_record" in leaf:
-                        leaf["solution_record"]["pseudocode"] = pseudocode_text
-                
-                for i, (leaf, _) in enumerate(stage3_75_critique_prompts):
-                    pseudocode_text = pseudocode_outputs[solution_count + i]
-                    leaf["crit_pseudocode"] = pseudocode_text
-                    if "critique_record" in leaf:
-                        leaf["critique_record"]["pseudocode"] = pseudocode_text
-                
-                print(f"  [Stage3.75]  生成了 {len(pseudocode_outputs)} 段伪代码", flush=True)
-
-            # ==============================================================================
-            # Stage 4: 翻译为代码 (Plan -> Code)
-            # ==============================================================================
-            # 1. 收集所有 伪代码 并进行随机筛选
-            if args.use_pseudocode_module:
-                print(f"  [Stage4] 准备生成代码: 收集所有 伪代码 并进行随机筛选...", flush=True)
-                all_stage4_tasks = []
-                for leaf in leaf_tasks:
-                    idx = leaf["idx"]
-                    problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
-
-                    if "pseudocode" in leaf:
-                        p = get_stage4_prompt(
-                            problem_template,
-                            leaf["pseudocode"],
-                            args.system_prompts_stage4,
-                            args.special_requirements,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": leaf.get("solution_record")
-                        })
-
-                    if "crit_pseudocode" in leaf:
-                        p = get_stage4_prompt(
-                            problem_template,
-                            leaf["crit_pseudocode"],
-                            args.system_prompts_stage4,
-                            args.special_requirements,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": leaf.get("critique_record")
-                        })
-            # 使用自然语言生成
-            else:
-                print(f"  [Stage4] 准备生成代码: 收集所有 自然语言解法 并进行随机筛选...", flush=True)
-                all_stage4_tasks = []
-                for leaf in leaf_tasks:
-                    idx = leaf["idx"]
-                    problem_template = data[idx]["code_generation_prompts"]["stage3_template"]
-
-                    if "solution_plan" in leaf:
-                        p = get_stage4_prompt(
-                            problem_template,
-                            leaf["solution_plan"],
-                            args.system_prompts_stage4_ablation_only_stage,
-                            args.special_requirements,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": leaf.get("solution_record")
-                        })
-                    
-                    if "crit_plan" in leaf:
-                        p = get_stage4_prompt(
-                            problem_template,
-                            leaf["crit_plan"],
-                            args.system_prompts_stage4_ablation_only_stage,
-                            args.special_requirements,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": leaf.get("critique_record")
-                        })
-            # 2. 按题目分组
             tasks_by_problem = {idx: [] for idx in active_indices}
             for task in all_stage4_tasks:
                 if task["idx"] in tasks_by_problem:
                     tasks_by_problem[task["idx"]].append(task)
-
-            # 3. 随机筛选
+            
             final_stage4_prompts = []
-            final_stage4_meta = []        # 记录 idx
-            final_stage4_records = []     # 记录 record
-
+            final_stage4_meta = []
+            final_stage4_records = []
+            
             for idx in active_indices:
                 current_count = len(codes_per_problem[idx])
                 needed = args.k_code - current_count
+                
                 if needed <= 0:
                     continue
-
+                
                 available_tasks = tasks_by_problem[idx]
                 random.shuffle(available_tasks)
                 selected_tasks = available_tasks[:needed]
@@ -1102,222 +898,16 @@ def run_generation_plansearch(
                     final_stage4_prompts.append(t["prompt"])
                     final_stage4_meta.append(t["idx"])
                     final_stage4_records.append(t["record"])
+                    
+                    if t["record"] is not None:
+                        plansearch_records_per_problem[t["idx"]].append(t["record"])
                 
-                print(f"    - 题目 {idx}: 现有 {len(available_tasks)} 个想法, 选取 {len(selected_tasks)} 个生成代码", flush=True)
-
+                print(f"    - 题目 {idx}: 使用二阶观察子集, 现有 {len(available_tasks)} 个想法, 选取 {len(selected_tasks)} 个生成代码", flush=True)
+            
             if not final_stage4_prompts:
                 print("  [Info] 没有任务需要执行 Stage 4 (可能已满足 k_code)，跳过", flush=True)
                 continue
-        # 只使用观察生成
-        else:
-
-            if args.ablation == "only_stage1":
-                print(f"  [Stage4] 准备生成代码: 使用一阶观察直接生成（构造子集）...", flush=True)
-                
-                all_stage4_tasks = []
-                for idx, obs_list in first_order_obs.items():
-                    c1_subsets = build_observation_subsets(obs_list, max_subset_size=2)
-                    
-                    problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
-                    
-                    for c1 in c1_subsets:
-                        first_subset_text = format_observations(c1)
-                        
-                        record = {
-                            "global_round": global_round,
-                            "first_obs_for_branch": c1,
-                            "second_obs_for_leaf": [],
-                            "first_obs_for_leaf_str": first_subset_text,
-                            "second_obs_for_leaf_str": "",
-                            "plan_type": "only_stage1",
-                            "plan_text": first_subset_text,
-                            "pseudocode": None,
-                            "codes": [],
-                            "use_pseudocode_module": args.use_pseudocode_module,
-                            "reflection_visibility": args.reflection_visibility,
-                            "use_first_order_obs": True,
-                        }
-                        
-                        p = get_stage2_prompt(
-                            problem_template,
-                            first_subset_text,
-                            args.system_prompts_stage4_ablation_only_stage,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": record
-                        })
-
-                tasks_by_problem = {idx: [] for idx in active_indices}
-                for task in all_stage4_tasks:
-                    if task["idx"] in tasks_by_problem:
-                        tasks_by_problem[task["idx"]].append(task)
-                
-                final_stage4_prompts = []
-                final_stage4_meta = []
-                final_stage4_records = []
-                
-                for idx in active_indices:
-                    current_count = len(codes_per_problem[idx])
-                    needed = args.k_code - current_count
-                    
-                    if needed <= 0:
-                        continue
-                    
-                    available_tasks = tasks_by_problem[idx]
-                    random.shuffle(available_tasks)
-                    selected_tasks = available_tasks[:needed]
-                    
-                    for t in selected_tasks:
-                        final_stage4_prompts.append(t["prompt"])
-                        final_stage4_meta.append(t["idx"])
-                        final_stage4_records.append(t["record"])
-                        
-                        # 把记录加到 plansearch_records
-                        if t["record"] is not None:
-                            plansearch_records_per_problem[t["idx"]].append(t["record"])
-                    
-                    print(f"    - 题目 {idx}: 使用一阶观察子集, 现有 {len(available_tasks)} 个想法, 选取 {len(selected_tasks)} 个生成代码", flush=True)
-                
-                if not final_stage4_prompts:
-                    print("  [Info] 没有任务需要执行 Stage 4 (可能已满足 k_code)，跳过", flush=True)
-                    continue
             
-            elif args.ablation == "only_stage2":
-                print(f"  [Stage4] 准备生成代码: 使用二阶观察直接生成（构造子集）...", flush=True)
-                
-                stage2_tasks = []
-                for idx, obs_list in first_order_obs.items():
-                    c1_subsets = build_observation_subsets(obs_list, max_subset_size=2)
-                    for c1 in c1_subsets:
-                        stage2_tasks.append({
-                            "idx": idx,
-                            "first_obs_for_branch": c1,
-                        })
-
-                if not stage2_tasks:
-                    print("  [WARN] 无法构造一阶子集，跳过本轮", flush=True)
-                    continue
-
-                print(f"  [Stage2临时] 对 {len(stage2_tasks)} 条路径生成二阶观察...", flush=True)
-
-                stage2_prompts = []
-                for task in stage2_tasks:
-                    idx = task["idx"]
-                    problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
-                    first_subset_text = format_observations(task["first_obs_for_branch"])
-                    task["first_subset_text"] = first_subset_text
-                    
-                    p = get_stage2_prompt(
-                        problem_template,
-                        first_subset_text,
-                        args.system_prompts_stage2,
-                    )
-                    stage2_prompts.append(p)
-
-                stage2_outputs = runner.generate(stage2_prompts)
-                stage2_items_by_call = []
-                
-                log_llm_interaction(f"Stage 2 临时 (Round {global_round})", stage2_prompts, stage2_outputs, args, stage2_tasks)
-
-                all_stage4_tasks = []
-                
-                for task, out in zip(stage2_tasks, stage2_outputs):
-                    idx = task["idx"]
-                    second_order_obs_list = parse_observations_stage2(out)
-                    stage2_items_by_call.append(second_order_obs_list)
-
-                    # Save observations to data for UT generation
-                    if data[idx].get("stage2_observations") is None:
-                        data[idx]["stage2_observations"] = ""
-                    if data[idx].get("stage2_observations_list") is None:
-                        data[idx]["stage2_observations_list"] = []
-                    
-                    # Aggregate the list form for granular UT generation
-                    data[idx]["stage2_observations_list"].extend(second_order_obs_list)
-
-                    for obs in second_order_obs_list:
-                        data[idx]["stage2_observations"] += f"- {obs}\n"
-                    
-                    if not second_order_obs_list:
-                        continue
-                    
-                    # 使用所有二阶观察，而不是构建子集
-                    
-                    problem_template = data[idx]["code_generation_prompts"]["stage2_template"]
-                    
-                    for second_order_obs in second_order_obs_list:
-                        second_obs_text = second_order_obs
-                        record = {
-                            "global_round": global_round,
-                            "first_obs_for_branch": task["first_obs_for_branch"],
-                            "second_obs_for_leaf": second_order_obs,  # 保存所有二阶观察
-                            "first_obs_for_leaf_str": "",
-                            "second_obs_for_leaf_str": second_obs_text,
-                            "plan_type": "only_stage2",
-                            "plan_text": second_obs_text,
-                            "pseudocode": None,
-                            "codes": [],
-                            "use_pseudocode_module": args.use_pseudocode_module,
-                            "reflection_visibility": args.reflection_visibility,
-                            "use_first_order_obs": False,
-                        }
-                        
-                        p = get_stage2_prompt(
-                            problem_template,
-                            second_obs_text,
-                            args.system_prompts_stage4_ablation_only_stage,
-                        )
-                        all_stage4_tasks.append({
-                            "idx": idx,
-                            "prompt": p,
-                            "record": record
-                        })
-                reserve_item_usage(
-                    args,
-                    [task["idx"] for task in stage2_tasks],
-                    stage2_prompts,
-                    stage2_outputs,
-                    "stage2_observation",
-                    usage_round_key,
-                    stage2_items_by_call,
-                )
-
-                tasks_by_problem = {idx: [] for idx in active_indices}
-                for task in all_stage4_tasks:
-                    if task["idx"] in tasks_by_problem:
-                        tasks_by_problem[task["idx"]].append(task)
-                
-                final_stage4_prompts = []
-                final_stage4_meta = []
-                final_stage4_records = []
-                
-                for idx in active_indices:
-                    current_count = len(codes_per_problem[idx])
-                    needed = args.k_code - current_count
-                    
-                    if needed <= 0:
-                        continue
-                    
-                    available_tasks = tasks_by_problem[idx]
-                    random.shuffle(available_tasks)
-                    selected_tasks = available_tasks[:needed]
-                    
-                    for t in selected_tasks:
-                        final_stage4_prompts.append(t["prompt"])
-                        final_stage4_meta.append(t["idx"])
-                        final_stage4_records.append(t["record"])
-                        
-                        if t["record"] is not None:
-                            plansearch_records_per_problem[t["idx"]].append(t["record"])
-                    
-                    print(f"    - 题目 {idx}: 使用二阶观察子集, 现有 {len(available_tasks)} 个想法, 选取 {len(selected_tasks)} 个生成代码", flush=True)
-                
-                if not final_stage4_prompts:
-                    print("  [Info] 没有任务需要执行 Stage 4 (可能已满足 k_code)，跳过", flush=True)
-                    continue
-                
 
         for idx, plan_record in zip(final_stage4_meta, final_stage4_records):
             if not isinstance(plan_record, dict):
@@ -1365,17 +955,14 @@ def run_generation_plansearch(
     all_code_full_outputs = []
     
     for idx in range(num):
-        data[idx]["solution_plans"] = solution_plans_per_problem[idx]
         data[idx]["num_codes_generated"] = len(codes_per_problem[idx])
         data[idx]["plansearch_plans_and_observations"] = plansearch_records_per_problem[idx]
         
         data[idx]["experiment_config"] = {
-            "use_pseudocode_module": args.use_pseudocode_module,
-            "reflection_visibility": args.reflection_visibility,
-            "use_first_order_obs": args.use_first_order_obs,
             "max_obs": args.max_obs,
             "max_global_rounds": args.max_global_rounds,
             "prompt_role_mode": args.prompt_role_mode,
+            "ablation": args.ablation,
         }
 
         status = "OK" if len(codes_per_problem[idx]) >= args.k_code else "WARN"
@@ -1990,8 +1577,6 @@ def generate_unit_tests_for_dataset(
                         input_mode = data_i.get("stage2_observations", "")
                     elif mode == "only_stage1":
                         input_mode = data_i.get("stage1_observations", "")
-                    elif mode == "natural_desciption":
-                        input_mode = data_i.get("solution_plan", "")
                     else:
                         input_mode = ""
 

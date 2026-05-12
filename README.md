@@ -4,26 +4,24 @@
   <a href="#-citation"><img src="https://img.shields.io/badge/Paper-Coming%20Soon-b31b1b" alt="Paper"></a>
   <a href="https://github.com/sanae-ai/CosPlay"><img src="https://img.shields.io/badge/Code-GitHub-000000?logo=github" alt="Code"></a>
   <a href="https://huggingface.co/datasets/yomi017/CosPlay"><img src="https://img.shields.io/badge/Hugging%20Face-Data%20%26%20Logs-ffcc00?logo=huggingface" alt="Data and logs"></a>
-  <a href="assets/methodology.pdf"><img src="https://img.shields.io/badge/Methodology-PDF-2b6cb0" alt="Methodology PDF"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT license"></a>
 </p>
 
 <p align="center">
   🎉 <a href="#-news">News</a> •
   🔗 <a href="#-links">Links</a> •
+  ✨ <a href="#-key-contributions">Key Contributions</a> •
+  🎯 <a href="#-motivation">Motivation</a> •
   🧠 <a href="#-method-overview">Method Overview</a> •
+  📊 <a href="#-results-at-a-glance">Results</a> •
   📦 <a href="#-data-and-logs">Data & Logs</a> •
-  ✨ <a href="#-getting-started">Getting Started</a> •
   🛠️ <a href="#-evaluation">Evaluation</a> •
-  🗂️ <a href="#-repository-layout">Repository Layout</a> •
-  📌 <a href="#-citation">Citation</a> •
-  🌻 <a href="#-acknowledgement">Acknowledgement</a> •
-  📬 <a href="#-contact">Contact</a>
+  📌 <a href="#-citation">Citation</a>
 </p>
 
-CoSPlay is a **test-time scaling (TTS)** method for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without releasing or requiring a separately trained model.
+CoSPlay is a **GT-free, training-free test-time scaling (TTS)** framework for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without requiring ground-truth unit tests or releasing a separately trained model.
 
-The current release provides the evaluation code, benchmark loader, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
+The current release provides evaluation code, benchmark loaders, paper figures, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
 
 ## 🎉 News
 
@@ -37,11 +35,25 @@ The current release provides the evaluation code, benchmark loader, and scripts 
 | 📄 Paper | Coming soon |
 | 💻 Code | [github.com/sanae-ai/CosPlay](https://github.com/sanae-ai/CosPlay) |
 | 🤗 Data & Logs | [huggingface.co/datasets/yomi017/CosPlay](https://huggingface.co/datasets/yomi017/CosPlay) |
-| 🖼️ Methodology Figure | [assets/methodology.pdf](assets/methodology.pdf) |
+| 📈 README Figures | [`assets/`](assets/) |
+
+## ✨ Contributions
+
+- **GT-free and training-free self-play:** CoSPlay builds a cooperative loop between self-generated code and self-generated unit tests, improving inference-time performance without ground-truth unit tests or model weight updates.
+- **Execution-matrix signals:** Code and unit-test pass counts provide internal reliability signals, allowing the method to clean weak code, refresh noisy tests, repair useful failures, and co-evolve both pools.
+- **Consensus-based final selection:** Output-consensus clustering resolves BoN ties using random valid inputs, improving robustness, scaling behavior, and transfer across base models.
+
+## 🎯 Motivation
+
+Existing RLVR methods can rely on costly ground-truth unit tests and weight updates, while GT-free TTS methods often spend more compute on sampling without reliably filtering noisy self-generated tests. CoSPlay targets the middle ground: high-accuracy code generation with **no GT tests** and **no additional training**.
+
+<p align="center">
+  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="100%">
+</p>
 
 ## 🧠 Method Overview
 
-CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool:
+CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool. The pipeline has three stages: idea-level exploration and attack, execution-matrix-driven self-play, and output-consensus cluster selection.
 
 1. **Explore** candidate code ideas and failure-oriented unit-test ideas.
 2. **Generate** code candidates and adversarial/random unit tests.
@@ -50,11 +62,7 @@ CoSPlay treats code generation as a test-time interaction between a code pool an
 5. **Select** the final answer with BoN-style code selection.
 
 <p align="center">
-  <img src="assets/methodology.png" alt="CoSPlay methodology" width="95%">
-</p>
-
-<p align="center">
-  <a href="assets/methodology.pdf">📎 Open the high-resolution PDF</a>
+  <img src="assets/methodology.png" alt="CoSPlay methodology" width="100%">
 </p>
 
 The default configuration in `evaluation/eval.sh` is the final CoSPlay setting used by this repository:
@@ -67,6 +75,32 @@ The default configuration in `evaluation/eval.sh` is the final CoSPlay setting u
 | Evaluation mode | `bon` |
 | Default base model | `Qwen/Qwen2.5-7B-Instruct` |
 
+## 📊 Results at a Glance
+
+CoSPlay improves both code-side and unit-test-side capabilities under the same GT-free, training-free setting, and remains complementary to stronger base or RLVR-trained models.
+
+<p align="center">
+  <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="100%">
+</p>
+
+CoSPlay also generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
+
+<p align="center">
+  <img src="assets/generalization_of_cosplay_on_various_models.png" alt="Generalization of CoSPlay on various base models" width="100%">
+</p>
+
+Under comparable TTS budgets, CoSPlay reaches stronger cost-accuracy tradeoffs than other GT-free TTS baselines.
+
+<p align="center">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="100%">
+</p>
+
+Finally, CoSPlay improves the accuracy-diversity frontier, indicating that better self-generated tests can help select stronger and more diverse code candidates.
+
+<p align="center">
+  <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="100%">
+</p>
+
 ## 📦 Data and Logs
 
 This repository does **not** release trained models. CoSPlay is a TTS method that can be applied to a selected base model at evaluation time.
@@ -77,7 +111,7 @@ Generated data and evaluation logs are available here:
 https://huggingface.co/datasets/yomi017/CosPlay
 ```
 
-The official benchmark numbers will be reported in the paper.
+The main benchmark trends are summarized above; complete generated data and logs are released separately to keep this repository lightweight.
 
 ## ✨ Getting Started
 
@@ -161,7 +195,7 @@ Logs are written under `CURE_logs/final_eval_logs/final/Cosplay_7b/` by default.
 
 ```text
 CosPlay/
-  assets/         Methodology figure source and README preview image
+  assets/         Paper figures and README preview images
   CURE_data/      Benchmark JSON files used by the evaluator
   evaluation/     Generation, execution, metrics, prompts, and eval script
   LICENSE         MIT license

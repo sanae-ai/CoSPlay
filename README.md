@@ -23,7 +23,7 @@
 
 CoSPlay is a **test-time scaling (TTS)** method for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without releasing or requiring a separately trained model.
 
-The current release provides the evaluation code, benchmark chunk loader, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
+The current release provides the evaluation code, benchmark loader, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
 
 ## 🎉 News
 
@@ -103,24 +103,18 @@ pip install torch transformers vllm openai numpy termcolor jinja2
 
 Depending on your CUDA, PyTorch, vLLM, and cluster setup, you may need to install these packages from the official wheels for your platform.
 
-## 🧩 Benchmark Chunks
+## 🧩 Benchmarks
 
-CoSPlay expects evaluation files under `CURE_data/`. The evaluation script passes dataset names as file stems, and `main_self_play_v3.py` resolves each name as:
+CoSPlay evaluates on four coding benchmarks:
 
-```text
-../CURE_data/<dataset>.json
-```
-
-Do not pass absolute paths to `--dataset` unless you also modify the loader.
-
-The default evaluation script covers these chunk families:
-
-| Family | Chunks |
+| Benchmark | Description |
 | --- | --- |
-| CodeContests | `CodeContests_chunk_0` to `CodeContests_chunk_4` |
-| CodeForces | `CodeForces_chunk_0` to `CodeForces_chunk_9` |
-| LiveBench | `LiveBench_chunk_0` to `LiveBench_chunk_2` |
-| LiveCodeBench | `LiveCodeBench_chunk_0` to `LiveCodeBench_chunk_10` |
+| CodeContests | Algorithmic programming problems from the CodeContests benchmark. |
+| CodeForces | Codeforces-style competitive-programming problems. |
+| LiveBench | Recent coding problems from LiveBench. |
+| LiveCodeBench | Recent competitive-programming style problems from LiveCodeBench. |
+
+Evaluation files are placed under `CURE_data/`, and the provided script handles the released dataset files automatically.
 
 ## 🛠️ Evaluation
 
@@ -179,9 +173,9 @@ Key evaluation files:
 | File | Purpose |
 | --- | --- |
 | `evaluation/eval.sh` | Main evaluation entrypoint |
-| `evaluation/main_self_play_v3.py` | Argument parsing and end-to-end evaluation orchestration |
-| `evaluation/generator_v3.py` | Candidate code and unit-test generation pipeline |
-| `evaluation/self_play_v3.py` | Self-play refinement loop |
+| `evaluation/main.py` | Argument parsing and end-to-end evaluation orchestration |
+| `evaluation/generator.py` | Candidate code and unit-test generation pipeline |
+| `evaluation/self_play.py` | Self-play refinement loop |
 | `evaluation/execution.py` | Code execution and test running |
 | `evaluation/metrics.py` | Metric computation and logging |
 

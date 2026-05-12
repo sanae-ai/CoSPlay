@@ -19,10 +19,10 @@ from termcolor import cprint
 
 from prompts import build_prompts_for_dataset
 from inference import ModelRunner
-from generator_v3 import run_generation_pipeline
+from generator import run_generation_pipeline
 from execution import run_all_executions
 from metrics import compute_and_log_metrics
-from self_play_v3 import run_self_play_iterations
+from self_play import run_self_play_iterations
 from usage_tracking import (
     format_usage_final_summary,
     format_usage_round_summary,

@@ -54,7 +54,7 @@ MODELS=(
   "${MODEL:-Qwen/Qwen2.5-7B-Instruct}"
 )
 
-# Dataset names are file stems under CURE_data. main_self_play_v3.py expands
+# Dataset names are file stems under CURE_data. main.py expands
 # each name to ../CURE_data/<dataset>.json, so do not pass absolute paths here.
 DATASETS=(
   "CodeContests_chunk_0"
@@ -169,7 +169,7 @@ for suffix in "${RUN_SUFFIXES[@]}"; do
         echo "Mode:    ${MODE}"
         echo "=================================================="
 
-        "${PYTHON_BIN}" -u main_self_play_v3.py \
+        "${PYTHON_BIN}" -u main.py \
           --use_api "${USE_API}" \
           --pretrained_model "${model}" \
           --single_eval "${SINGLE_EVAL}" \

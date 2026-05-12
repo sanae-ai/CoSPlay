@@ -13,8 +13,8 @@ from UT_config import (
     get_full_prompt,
     get_fix_code_prompt_with_ut,
 )
-from generator_v3 import extract_code, extract_ut_input, extract_ut_output
-from generator_v3 import parse_random_case_inputs, _strip_case_prefix
+from generator import extract_code, extract_ut_input, extract_ut_output
+from generator import parse_random_case_inputs, _strip_case_prefix
 from collections import Counter
 import math
 import random

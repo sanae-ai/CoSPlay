@@ -9,7 +9,7 @@ generate unit tests, execute code-test pairs, refine both pools, and select the
 final answer from execution evidence.
 
 The default script, [`eval.sh`](eval.sh), runs the final CoSPlay setting used by
-this release on the benchmark chunks under `../CURE_data`.
+this release on the benchmark files under `../CURE_data`.
 
 ## What CoSPlay Evaluates
 
@@ -78,29 +78,29 @@ The release evaluates on four coding benchmarks:
 | `CodeContests` | Algorithmic programming problems from the CodeContests benchmark, emphasizing classical contest reasoning. |
 | `CodeForces` | Codeforces-style competitive-programming problems, typically the hardest split in our evaluation. |
 
-Datasets are stored as JSON chunks under:
+Datasets are stored as JSON files under:
 
 ```text
-../CURE_data/<dataset_name>.json
+../CURE_data/<dataset_file_stem>.json
 ```
 
-The loader in [`main_self_play_v3.py`](main_self_play_v3.py) resolves
-`--dataset CodeContests_chunk_0` as:
+The loader in [`main.py`](main.py) resolves the value
+passed to `--dataset` as a file stem under `../CURE_data`.
 
 ```text
-../CURE_data/CodeContests_chunk_0.json
+--dataset <dataset_file_stem> -> ../CURE_data/<dataset_file_stem>.json
 ```
 
 Do not pass an absolute path to `--dataset` unless you also modify the loader.
 
-The default script evaluates these chunk families:
+The default release covers these benchmark families:
 
-| Family | Chunks |
+| Benchmark |
 | --- | --- |
-| `CodeContests` | `CodeContests_chunk_0` to `CodeContests_chunk_4` |
-| `CodeForces` | `CodeForces_chunk_0` to `CodeForces_chunk_9` |
-| `LiveBench` | `LiveBench_chunk_0` to `LiveBench_chunk_2` |
-| `LiveCodeBench` | `LiveCodeBench_chunk_0` to `LiveCodeBench_chunk_10` |
+| `CodeContests` |
+| `CodeForces` |
+| `LiveBench` |
+| `LiveCodeBench` |
 
 ## Metrics
 
@@ -181,7 +181,7 @@ Most options can be overridden through environment variables in `eval.sh`.
 For debugging, you can call the Python entrypoint directly from this directory:
 
 ```bash
-python -u main_self_play_v3.py \
+python -u main.py \
   --use_api False \
   --pretrained_model Qwen/Qwen2.5-7B-Instruct \
   --dataset CodeContests_chunk_0 \
@@ -222,9 +222,9 @@ resumed.
 | File | Purpose |
 | --- | --- |
 | [`eval.sh`](eval.sh) | Main shell entrypoint for full benchmark evaluation. |
-| [`main_self_play_v3.py`](main_self_play_v3.py) | Argument parsing, dataset loading, orchestration, resume logic, and final evaluation. |
-| [`generator_v3.py`](generator_v3.py) | Stage-1 idea exploration, code generation, unit-test generation, extraction, and validation helpers. |
-| [`self_play_v3.py`](self_play_v3.py) | Execution-matrix-driven self-play loop. |
+| [`main.py`](main.py) | Argument parsing, dataset loading, orchestration, resume logic, and final evaluation. |
+| [`generator.py`](generator.py) | Stage-1 idea exploration, code generation, unit-test generation, extraction, and validation helpers. |
+| [`self_play.py`](self_play.py) | Execution-matrix-driven self-play loop. |
 | [`execution.py`](execution.py) | Sandboxed execution of generated code on generated and official tests. |
 | [`metrics.py`](metrics.py) | BoN, pass@k, cluster selection, and evaluation metrics. |
 | [`inference.py`](inference.py) | vLLM and API model backends. |
@@ -245,7 +245,7 @@ them through your own wrapper. The public config keeps API keys as placeholders.
 
 ## Resume Support
 
-`main_self_play_v3.py` supports resuming from saved outputs:
+`main.py` supports resuming from saved outputs:
 
 | Argument | Purpose |
 | --- | --- |

@@ -1700,7 +1700,7 @@ def generate_unit_tests_for_dataset(
     return data, case_generation_result, mean_case
 
 
-# Public generation entrypoint used by main_self_play_v3.py.
+# Public generation entrypoint used by main.py.
 def run_generation_pipeline(
     data,
     code_generation_prompts,

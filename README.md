@@ -251,7 +251,7 @@ If you use CoSPlay, please cite the paper:
 
 ## 🌻 Acknowledgement
 
-TODO: Add acknowledgements for upstream codebases, datasets, model providers, and evaluation frameworks.
+This work was supported in part by Guangzhou-HKUST(GZ) Joint Funding Program (Grant No. 2023A03J0008), Education Bureau of Guangzhou Municipality.
 
 ## 📜 License
 

@@ -1,52 +1,90 @@
-# CosPlay
+# CoSPlay: Cooperative Self-Play at Test-Time with Self-Generated Code and Unit Test
 
 <p align="center">
-  <a href="#citation"><img src="https://img.shields.io/badge/Paper-Coming%20Soon-lightgrey" alt="Paper"></a>
-  <a href="https://huggingface.co/datasets/yomi017/CosPlay"><img src="https://img.shields.io/badge/Hugging%20Face-Data%20%26%20Logs-yellow?logo=huggingface" alt="Data and logs on Hugging Face"></a>
-  <a href="#evaluation"><img src="https://img.shields.io/badge/Evaluation-eval.sh-blue" alt="Evaluation"></a>
-  <a href="#license"><img src="https://img.shields.io/badge/License-TODO-lightgrey" alt="License"></a>
+  <a href="#-citation"><img src="https://img.shields.io/badge/Paper-Coming%20Soon-b31b1b" alt="Paper"></a>
+  <a href="https://github.com/sanae-ai/CosPlay"><img src="https://img.shields.io/badge/Code-GitHub-000000?logo=github" alt="Code"></a>
+  <a href="https://huggingface.co/datasets/yomi017/CosPlay"><img src="https://img.shields.io/badge/Hugging%20Face-Data%20%26%20Logs-ffcc00?logo=huggingface" alt="Data and logs"></a>
+  <a href="assets/methodology.pdf"><img src="https://img.shields.io/badge/Methodology-PDF-2b6cb0" alt="Methodology PDF"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT license"></a>
 </p>
 
-CosPlay is a test-time scaling (TTS) method for code generation. It uses LLM-generated unit tests, self-play refinement, and best-of-N selection to improve a base model at inference time without releasing or requiring a separate trained model.
+<p align="center">
+  🎉 <a href="#-news">News</a> •
+  🔗 <a href="#-links">Links</a> •
+  🧠 <a href="#-method-overview">Method Overview</a> •
+  📦 <a href="#-data-and-logs">Data & Logs</a> •
+  ✨ <a href="#-getting-started">Getting Started</a> •
+  🛠️ <a href="#-evaluation">Evaluation</a> •
+  🗂️ <a href="#-repository-layout">Repository Layout</a> •
+  📌 <a href="#-citation">Citation</a> •
+  🌻 <a href="#-acknowledgement">Acknowledgement</a> •
+  📬 <a href="#-contact">Contact</a>
+</p>
 
-The current release provides the evaluation code and scripts for reproducing the CosPlay pipeline over programming benchmarks split into smaller JSON chunks. Generated data and logs are hosted on Hugging Face.
+CoSPlay is a **test-time scaling (TTS)** method for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without releasing or requiring a separately trained model.
 
-## Method Overview
+The current release provides the evaluation code, benchmark chunk loader, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
 
-CosPlay evaluates code generation with an iterative test-time pipeline:
+## 🎉 News
 
-1. Generate candidate reasoning paths and programs with PlanSearch-style prompting.
-2. Generate candidate unit tests for each task.
-3. Execute generated programs against public, generated, and ground-truth tests.
-4. Use self-play rounds to refine unit-test feedback and candidate selection.
-5. Select final answers with BoN evaluation over multiple code/test budgets.
+- **2026-05**: Code, evaluation scripts, generated data, and logs are being prepared for public release.
+- **TODO**: Add the paper link after the paper page is available.
 
-The default configuration in `evaluation/eval.sh` is the final CosPlay setting used by this repository:
+## 🔗 Links
+
+| Resource | URL |
+| --- | --- |
+| 📄 Paper | Coming soon |
+| 💻 Code | [github.com/sanae-ai/CosPlay](https://github.com/sanae-ai/CosPlay) |
+| 🤗 Data & Logs | [huggingface.co/datasets/yomi017/CosPlay](https://huggingface.co/datasets/yomi017/CosPlay) |
+| 🖼️ Methodology Figure | [assets/methodology.pdf](assets/methodology.pdf) |
+
+## 🧠 Method Overview
+
+CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool:
+
+1. **Explore** candidate code ideas and failure-oriented unit-test ideas.
+2. **Generate** code candidates and adversarial/random unit tests.
+3. **Self-play** between code and tests to clean weak code, replace weak tests, and fix useful failures.
+4. **Cluster** output behavior using random valid test inputs.
+5. **Select** the final answer with BoN-style code selection.
+
+<p align="center">
+  <img src="assets/methodology.png" alt="CoSPlay methodology" width="95%">
+</p>
+
+<p align="center">
+  <a href="assets/methodology.pdf">📎 Open the high-resolution PDF</a>
+</p>
+
+The default configuration in `evaluation/eval.sh` is the final CoSPlay setting used by this repository:
 
 | Setting | Default |
 | --- | --- |
 | Code candidates | `K_CODE=16` |
 | Unit-test candidates | `K_CASE=16` |
 | Self-play rounds | `SELF_PLAY_ROUND=5` |
+| Evaluation mode | `bon` |
+| Default base model | `Qwen/Qwen2.5-7B-Instruct` |
 
-## Data and Logs
+## 📦 Data and Logs
 
-This repository does not release trained models. CosPlay is a TTS method that can be applied to a chosen base model at evaluation time.
+This repository does **not** release trained models. CoSPlay is a TTS method that can be applied to a selected base model at evaluation time.
 
-Generated data and evaluation logs are available on Hugging Face:
+Generated data and evaluation logs are available here:
 
 ```text
-TODO
+https://huggingface.co/datasets/yomi017/CosPlay
 ```
 
-The paper contains the official results. The paper link will be added when available.
+The official benchmark numbers will be reported in the paper.
 
-## Getting Started
+## ✨ Getting Started
 
 Clone the repository:
 
 ```bash
-git clone TODO
+git clone https://github.com/sanae-ai/CosPlay.git
 cd CosPlay
 ```
 
@@ -65,9 +103,9 @@ pip install torch transformers vllm openai numpy termcolor jinja2
 
 Depending on your CUDA, PyTorch, vLLM, and cluster setup, you may need to install these packages from the official wheels for your platform.
 
-## Evaluation Data
+## 🧩 Benchmark Chunks
 
-CosPlay expects evaluation data under `CURE_data/`. The evaluation script passes dataset names as file stems, and `main_self_play_v3.py` resolves each name as:
+CoSPlay expects evaluation files under `CURE_data/`. The evaluation script passes dataset names as file stems, and `main_self_play_v3.py` resolves each name as:
 
 ```text
 ../CURE_data/<dataset>.json
@@ -84,7 +122,7 @@ The default evaluation script covers these chunk families:
 | LiveBench | `LiveBench_chunk_0` to `LiveBench_chunk_2` |
 | LiveCodeBench | `LiveCodeBench_chunk_0` to `LiveCodeBench_chunk_10` |
 
-## Evaluation
+## 🛠️ Evaluation
 
 Run the default open-source evaluation entrypoint:
 
@@ -125,12 +163,14 @@ Common runtime overrides:
 
 Logs are written under `CURE_logs/final_eval_logs/final/Cosplay_7b/` by default.
 
-## Repository Layout
+## 🗂️ Repository Layout
 
 ```text
 CosPlay/
+  assets/         Methodology figure source and README preview image
   CURE_data/      Benchmark JSON files used by the evaluator
   evaluation/     Generation, execution, metrics, prompts, and eval script
+  LICENSE         MIT license
   README.md       Project overview and usage notes
 ```
 
@@ -145,14 +185,22 @@ Key evaluation files:
 | `evaluation/execution.py` | Code execution and test running |
 | `evaluation/metrics.py` | Metric computation and logging |
 
-## Citation
+## 📌 Citation
 
-If you use CosPlay, please cite the paper below once citation information is available:
+If you use CoSPlay, please cite the paper below once citation information is available:
 
 ```bibtex
 TODO
 ```
 
-## Acknowledgement
+## 🌻 Acknowledgement
 
 TODO: Add acknowledgements for upstream codebases, datasets, model providers, and evaluation frameworks.
+
+## 📜 License
+
+This project is released under the [MIT License](LICENSE).
+
+## 📬 Contact
+
+TODO.

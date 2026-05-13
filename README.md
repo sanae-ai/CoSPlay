@@ -13,7 +13,6 @@
   🧠 <a href="#-methods">Methods</a> •
   ✨ <a href="#-contributions">Contributions</a> •
   🚀 <a href="#-quick-start">Quick Start</a> •
-  📦 <a href="#-data-and-logs">Data & Logs</a> •
   🛠️ <a href="#-comprehensive-evaluation">Evaluation</a> •
   📊 <a href="#-interesting-results">Results</a> •
   📚 <a href="#-citation">Citation</a>
@@ -109,21 +108,35 @@ pip install --no-cache-dir \
 MAX_JOBS=4 pip install flash-attn==2.8.3 --no-build-isolation
 ```
 
-## 📦 Data and Logs
+### ⚙️ Download Dataset
 
-Generated data and evaluation logs are available here:
+We provide the benchmark datasets used by CoSPlay on Hugging Face, including `CodeContests`, `LiveBench`, `LiveCodeBench`, and `CodeForces`. The evaluation scripts read dataset files from `CURE_data/<dataset_file_stem>.json`.
 
-```text
-https://huggingface.co/datasets/yomi017/CosPlay
+Download the chunked evaluation datasets used by the default evaluation script:
+
+```bash
+python data/download_data.py
 ```
 
-## 🧩 Datasets
+List available dataset shards:
 
-The dataset is also in: 
-
-```text
-https://huggingface.co/datasets/yomi017/CosPlay/Datasets
+```bash
+python data/download_data.py --list
 ```
+
+Download selected shards only:
+
+```bash
+python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
+```
+
+The four complete benchmark files are much larger than the shards and are optional. Download them only if you need full-dataset reprocessing:
+
+```bash
+python data/download_data.py --group full
+```
+
+Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).
 
 ## 🛠️ Comprehensive Evaluation
 

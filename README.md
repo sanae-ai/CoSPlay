@@ -28,16 +28,6 @@
 
 CoSPlay improves code and unit-test capabilities without GT data or training, while competing RLVR methods require costly weight updating or massive GT labels.
 
-<p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="78%">
-</p>
-
-<p align="center">
-  <sub><em><strong>Efficiency.</strong> Token cost versus Pass@1 on Qwen2.5-Instruct models.</em></sub>
-</p>
-
-Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a stronger cost-accuracy trade-off than GT-free TTS baselines.
-
 ## 📌 Introduction
 
 Unit tests are powerful executable signals for code generation, but strong RLVR or GT-based TTS pipelines often rely on costly ground-truth tests, while GT-free methods struggle with noisy, weak, or spuriously coupled self-generated tests. **CoSPlay** is a **GT-free, training-free** framework that improves code and unit tests together at inference time through exploration-attack-guided idea generation, execution-matrix-driven self-play, and output-consensus clustering for final selection.
@@ -149,6 +139,17 @@ CONDA_ENV_NAME=cosplay bash evaluation/eval.sh
 ```
 
 ## 📊 Main Results
+<p align="center">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="78%">
+</p>
+
+<p align="center">
+  <sub><em><strong>Efficiency.</strong> Token cost versus Pass@1 on Qwen2.5-Instruct models.</em></sub>
+</p>
+
+Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a stronger cost-accuracy trade-off than GT-free TTS baselines.
+
+---
 
 <p align="center">
   <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="88%">

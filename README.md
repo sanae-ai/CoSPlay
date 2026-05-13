@@ -106,21 +106,21 @@ The script initializes `conda` correctly for non-interactive bash, creates the `
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-#### Small Dataset Shards
+#### Small Datasets
 
-These are the small split files used by the default evaluation scripts. Use this option for normal reproduction and quick checks.
+Use the small evaluation files for normal reproduction and quick checks. You can also browse them directly at [Datasets/CURE_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data).
 
 ```bash
 python data/download_data.py
 ```
 
-List available small shards:
+List available small datasets:
 
 ```bash
 python data/download_data.py --list
 ```
 
-Download selected shards only:
+Download selected files only, for example [LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveBench_chunk_0.json) and [CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeForces_chunk_0.json):
 
 ```bash
 python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
@@ -128,7 +128,7 @@ python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
 
 #### Four Full Benchmark Datasets
 
-These are the four complete benchmark files: `CodeContests.json`, `CodeForces.json`, `LiveBench.json`, and `LiveCodeBench.json`. They are much larger than the small shards, so download them only for full-dataset reprocessing.
+These are the four complete benchmark files: [CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveBench.json), and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveCodeBench.json). They are much larger than the small datasets, so download them only for full-dataset reprocessing.
 
 ```bash
 python data/download_data.py --group full
@@ -140,7 +140,7 @@ List available full benchmark files:
 python data/download_data.py --group full --list
 ```
 
-Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).
+Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).
 
 ### 🔥 Run
 
@@ -157,6 +157,9 @@ Evaluate a local checkpoint or another Hugging Face model:
 
 ```bash
 MODEL=/path/to/model CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+```
+
+```bash
 MODEL=Qwen/Qwen2.5-14B-Instruct CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
 ```
 
@@ -164,6 +167,9 @@ Run repeated experiments or control GPU placement:
 
 ```bash
 REPEAT_IDS=1,2,3 CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+```
+
+```bash
 CUDA_VISIBLE_DEVICES=0,1 GPU_GROUPS='[[0],[1]]' CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
 ```
 
@@ -195,8 +201,10 @@ Datasets are resolved as file stems under `CURE_data/`, for example
 </p>
 
 <p align="center">
-  <sub><em><strong>Main Results.</strong> Performance comparison between CoSPlay and RLVR baselines across four coding benchmarks.</em></sub>
+  <sub><em><strong>Main Results.</strong> Performance comparison between CoSPlay and RLVR baselines.</em></sub>
 </p>
+
+**\#Data** is the amount of GT training data; **Sig.** measures generated-test selection accuracy; **UT** and **Code** are generated unit-test and code correctness; **BoN** is best-of-N accuracy using generated tests. Red/blue cells are above/below the column mean, and Δ rows report absolute gains over the corresponding base model.
 
 ---
 
@@ -276,6 +284,8 @@ If you use CoSPlay, please cite the paper:
 ## 🌻 Acknowledgement
 
 This work was supported in part by Guangzhou-HKUST(GZ) Joint Funding Program (Grant No. 2023A03J0008), Education Bureau of Guangzhou Municipality.
+
+We also thank the authors of [CURE](https://github.com/Gen-Verse/CURE) for releasing their codebase, which our evaluation code builds upon.
 
 ## 📜 License
 

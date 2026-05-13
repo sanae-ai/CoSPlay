@@ -147,16 +147,62 @@ Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging 
 Run the default evaluation entrypoint:
 
 ```bash
-CONDA_ENV_NAME=cosplay bash evaluation/eval.sh
+CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
 ```
+
+By default, this evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`,
+`K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`.
+
+Evaluate a local checkpoint or another Hugging Face model:
+
+```bash
+MODEL=/path/to/model CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+MODEL=Qwen/Qwen2.5-14B-Instruct CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+```
+
+Run repeated experiments or control GPU placement:
+
+```bash
+REPEAT_IDS=1,2,3 CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+CUDA_VISIBLE_DEVICES=0,1 GPU_GROUPS='[[0],[1]]' CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+```
+
+For debugging one dataset, call the Python entrypoint from `evaluation/`:
+
+```bash
+cd evaluation
+python -u main.py \
+  --use_api False \
+  --pretrained_model Qwen/Qwen2.5-7B-Instruct \
+  --dataset CodeContests_chunk_0 \
+  --k_code 16 \
+  --k_case 16 \
+  --generation_mode plansearch \
+  --eval_mode bon \
+  --use_idea_attack_ut True \
+  --use_self_play True \
+  --self_play_round 5 \
+  --gpu_groups '[[0],[1]]'
+```
+
+Datasets are resolved as file stems under `CURE_data/`, for example
+`--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
 
 ## 📊 Main Results
 
 <p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
+  <img src="assets/data.png" alt="Performance comparison between CoSPlay and RLVR models" width="88%">
 </p>
 
+<p align="center">
+  <sub><em><strong>Main Results.</strong> Performance comparison between CoSPlay and RLVR baselines across four coding benchmarks.</em></sub>
+</p>
 
+---
+
+<p align="center">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
+</p>
 
 <p align="center">
   <sub><em><strong>Efficiency.</strong> Token cost versus Pass@1 on Qwen2.5-Instruct models.</em></sub>

@@ -9,7 +9,7 @@ cd "${SCRIPT_DIR}"
 
 # Optional runtime overrides:
 # - PYTHON_BIN=python3 uses a different Python executable.
-# - CONDA_ENV_NAME=cosplay activates a conda environment before running.
+# - CONDA_ENV_NAME=CosPlay activates a conda environment before running.
 # - MODEL=/path/to/model or MODEL=org/model changes the evaluated model.
 # - CUDA_VISIBLE_DEVICES and GPU_GROUPS control the vLLM engine placement.
 PYTHON_BIN="${PYTHON_BIN:-python}"

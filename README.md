@@ -15,8 +15,7 @@
   🧠 <a href="#-methods">Methods</a> •
   ✨ <a href="#-contributions">Contributions</a> •
   🚀 <a href="#-quick-start">Quick Start</a> •
-  🛠️ <a href="#-comprehensive-evaluation">Evaluation</a> •
-  📊 <a href="#-interesting-results">Results</a> •
+  📊 <a href="#-interesting-results">Other Results</a> •
   📚 <a href="#-citation">Citation</a>
 </p>
 
@@ -143,7 +142,7 @@ python data/download_data.py --group full --list
 
 Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).
 
-## 🔥 Run
+### 🔥 Run
 
 Run the default evaluation entrypoint:
 

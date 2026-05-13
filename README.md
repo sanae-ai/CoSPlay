@@ -41,13 +41,13 @@ Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a s
 
 ## 📌 Introduction
 
-CoSPlay is a **GT-free, training-free test-time scaling (TTS)** framework for code generation. It improves a chosen base model at inference time by coupling self-generated code and unit tests through cooperative self-play, without requiring ground-truth unit tests or releasing a separately trained model.
+Unit tests are powerful executable signals for code generation, but strong RLVR or GT-based TTS pipelines often rely on costly ground-truth tests, while GT-free methods struggle with noisy, weak, or spuriously coupled self-generated tests. **CoSPlay** is a **GT-free, training-free** framework that improves code and unit tests together at inference time through exploration-attack-guided idea generation, execution-matrix-driven self-play, and output-consensus clustering for final selection.
 
 The current release provides evaluation code, benchmark loaders, paper figures, and scripts for reproducing the CoSPlay pipeline. Generated data and evaluation logs are hosted on Hugging Face.
 
 ## 🎯 Motivation
 
-CoSPlay targets the middle ground: high-accuracy code generation with **no GT tests** and **no additional training**.
+CoSPlay targets the middle ground between GT-dependent RLVR and sampling-only TTS: high-accuracy code generation with **no GT tests** and **no additional training**.
 
 <p align="center">
   <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
@@ -62,12 +62,6 @@ Existing RLVR methods can rely on costly ground-truth unit tests and weight upda
 ## 🧠 Methods
 
 CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool. The pipeline has three stages: idea-level exploration and attack, execution-matrix-driven self-play, and output-consensus cluster selection.
-
-1. **Explore** candidate code ideas and failure-oriented unit-test ideas.
-2. **Generate** code candidates and adversarial/random unit tests.
-3. **Self-play** between code and tests to clean weak code, replace weak tests, and fix useful failures.
-4. **Cluster** output behavior using random valid test inputs.
-5. **Select** the final answer with BoN-style code selection.
 
 <p align="center">
   <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
@@ -154,7 +148,7 @@ CoSPlay generalizes across different model families and scales, showing that the
 ---
 
 <p align="center">
-  <img src="assets/Cosplay_scaling_cropped.png" alt="CoSPlay scaling with BoN candidate budget" width="70%">
+  <img src="assets/Cosplay_scaling_cropped.png" alt="CoSPlay scaling with BoN candidate budget" width="88%">
 </p>
 
 <p align="center">

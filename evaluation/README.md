@@ -1,15 +1,3 @@
-# Evaluation
-
-This directory contains the open-source evaluation pipeline for **CoSPlay:
-Cooperative Self-Play at Test-Time with Self-Generated Code and Unit Test**.
-CoSPlay is a **GT-free** and **training-free** test-time scaling method for code
-generation. It does not require ground-truth unit tests during inference and does
-not update model weights. Instead, it uses the model itself to generate code,
-generate unit tests, execute code-test pairs, refine both pools, and select the
-final answer from execution evidence.
-
-The default script, [`eval.sh`](eval.sh), runs the final CoSPlay setting used by
-this release on the benchmark files under `../CURE_data`.
 
 ## Benchmarks
 

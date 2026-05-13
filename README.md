@@ -7,6 +7,8 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT license"></a>
 </p>
 
+
+
 <p align="center">
   📌 <a href="#-introduction">Introduction</a> •
   🎯 <a href="#-motivation">Motivation</a> •
@@ -18,15 +20,21 @@
   📚 <a href="#-citation">Citation</a>
 </p>
 
+
+
 <p align="center">
   <img src="assets/radar.png" alt="CoSPlay code and unit-test capability comparison" width="78%">
 </p>
 
+
+
 <p align="center">
-  <sub><em><strong>Capability Comparison.</strong> Code and UT capability comparison against RLVR baselines.</em></sub>
+  <sub><em><strong>Capability Comparison.</strong> Performance comparison between our <b>Training-free</b> and <b>GT-free CoSPlay</b> and other RLVR methods need <b>costly weight updating</b> (AZR-7B-Coder 0k) or <b>massive GT labels</b> (AceCoder-7B-Rule 22k, AceCoder-7B-RM 329k, CURE-7B 4.5k).</em></sub>
 </p>
 
-CoSPlay improves code and unit-test capabilities without GT data or training, while competing RLVR methods require costly weight updating or massive GT labels.
+
+
+
 
 ## 📌 Introduction
 
@@ -42,9 +50,13 @@ CoSPlay targets the middle ground between GT-dependent RLVR and sampling-only TT
   <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
 </p>
 
+
+
 <p align="center">
   <sub><em><strong>Motivation.</strong> GT-free and training-free code generation setting.</em></sub>
 </p>
+
+
 
 Existing RLVR methods can rely on costly ground-truth unit tests and weight updates, while GT-free TTS methods often spend more compute on sampling without reliably filtering noisy self-generated tests.
 
@@ -56,9 +68,13 @@ CoSPlay treats code generation as a test-time interaction between a code pool an
   <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
 </p>
 
+
+
 <p align="center">
   <sub><em><strong>Full CoSPlay Pipeline.</strong> Exp&Atk idea generation, execution-matrix self-play, and output-consensus clustering.</em></sub>
 </p>
+
+
 
 CoSPlay first generates solution-oriented code ideas and failure-oriented UT ideas to bootstrap reliable and discriminative pools. It then co-evolves code and UTs through execution-matrix pass-count signals, and resolves BoN ties with output-consensus clustering.
 
@@ -139,13 +155,18 @@ CONDA_ENV_NAME=cosplay bash evaluation/eval.sh
 ```
 
 ## 📊 Main Results
+
 <p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="78%">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
 </p>
+
+
 
 <p align="center">
   <sub><em><strong>Efficiency.</strong> Token cost versus Pass@1 on Qwen2.5-Instruct models.</em></sub>
 </p>
+
+
 
 Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a stronger cost-accuracy trade-off than GT-free TTS baselines.
 
@@ -155,9 +176,13 @@ Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a s
   <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="88%">
 </p>
 
+
+
 <p align="center">
   <sub><em><strong>Generalization.</strong> BoN gains across base and RL models.</em></sub>
 </p>
+
+
 
 CoSPlay generalizes across different model families and scales, showing that the self-play mechanism is not tied to a single checkpoint.
 
@@ -167,9 +192,13 @@ CoSPlay generalizes across different model families and scales, showing that the
   <img src="assets/Cosplay_scaling_cropped.png" alt="CoSPlay scaling with BoN candidate budget" width="88%">
 </p>
 
+
+
 <p align="center">
   <sub><em><strong>Scaling.</strong> BoN accuracy versus candidate-pool budget.</em></sub>
 </p>
+
+
 
 CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN accuracy ceiling beyond strong baselines.
 
@@ -179,9 +208,13 @@ CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN
   <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="88%">
 </p>
 
+
+
 <p align="center">
   <sub><em><strong>UT Diversity Trade-off.</strong> UT accuracy-rank frontier with BoN and Signal encoded by marker size.</em></sub>
 </p>
+
+
 
 CoSPlay improves the accuracy-diversity frontier, indicating that better self-generated tests can help select stronger and more diverse code candidates.
 

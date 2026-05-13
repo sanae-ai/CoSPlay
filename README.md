@@ -194,6 +194,39 @@ python -u main.py \
 Datasets are resolved as file stems under `CURE_data/`, for example
 `--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
 
+### 📈 Signal
+
+To reproduce the Signal-style UT efficiency analysis, use
+[`evaluation/Discussion/UT_efficiency.py`](evaluation/Discussion/UT_efficiency.py). The
+script combines code candidates from `--code_dir` with generated UTs from
+`--case_dir`, then recomputes BoN and optionally cluster-based New_BoN metrics.
+
+```bash
+CASE_DIR="/path/to/ut_or_case_outputs"
+CODE_DIR="/path/to/code_outputs"
+OUT_DIR="outputs/ut_efficiency"
+
+python evaluation/Discussion/UT_efficiency.py \
+  --case_dir "$CASE_DIR" \
+  --code_dir "$CODE_DIR" \
+  --out_dir "$OUT_DIR" \
+  --outputs_prefix "CODE_Qwen2.5_Ins_UT_CoSPlay_round_00_CodeContests" \
+  --mode "CODE_Qwen2.5_Ins_UT_CoSPlay_round_00_CodeContests" \
+  --result_subdir "ut_efficiency" \
+  --strict \
+  --k_code 16 \
+  --k_case 16 \
+  --case_contains "round_00" \
+  --generation_mode plansearch \
+  --compute_new_bon True
+```
+
+Use `--generation_mode plansearch` for CoSPlay-generated UTs and
+`--generation_mode original_resample` for non-CoSPlay UT sources. Keep
+`--strict` enabled for final experiments so mismatched chunks or task IDs stop
+the run instead of being skipped silently. Set `--compute_new_bon False` when
+only default BoN is needed.
+
 ## 📊 Main Results
 
 <p align="center">

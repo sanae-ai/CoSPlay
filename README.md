@@ -15,7 +15,7 @@
   🧠 <a href="#-methods">Methods</a> •
   ✨ <a href="#-contributions">Contributions</a> •
   🚀 <a href="#-quick-start">Quick Start</a> •
-  📊 <a href="#-interesting-results">Other Results</a> •
+  📊 <a href="#-interesting-results">Main Results</a> •
   📚 <a href="#-citation">Citation</a>
 </p>
 
@@ -46,7 +46,7 @@ The current release provides evaluation code, benchmark loaders, paper figures, 
 CoSPlay targets the middle ground between GT-dependent RLVR and sampling-only TTS: high-accuracy code generation with **no GT tests** and **no additional training**.
 
 <p align="center">
-  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="88%">
+  <img src="assets/motivation.png" alt="CoSPlay motivation: GT-free and training-free test-time scaling" width="78%">
 </p>
 
 
@@ -64,7 +64,7 @@ Existing RLVR methods can rely on costly ground-truth unit tests and weight upda
 CoSPlay treats code generation as a test-time interaction between a code pool and a unit-test pool. The pipeline has three stages: idea-level exploration and attack, execution-matrix-driven self-play, and output-consensus cluster selection.
 
 <p align="center">
-  <img src="assets/methodology.png" alt="CoSPlay methodology" width="88%">
+  <img src="assets/methodology.png" alt="CoSPlay methodology" width="78%">
 </p>
 
 
@@ -191,7 +191,7 @@ Datasets are resolved as file stems under `CURE_data/`, for example
 ## 📊 Main Results
 
 <p align="center">
-  <img src="assets/data.png" alt="Performance comparison between CoSPlay and RLVR models" width="88%">
+  <img src="assets/data.png" alt="Performance comparison between CoSPlay and RLVR models" width="78%">
 </p>
 
 <p align="center">
@@ -201,7 +201,7 @@ Datasets are resolved as file stems under `CURE_data/`, for example
 ---
 
 <p align="center">
-  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="88%">
+  <img src="assets/tts_cost_vs_pass1_combined.png" alt="TTS cost versus pass@1 comparison" width="78%">
 </p>
 
 <p align="center">
@@ -215,7 +215,7 @@ Darker markers indicate scaled variants with larger budgets; CoSPlay reaches a s
 ---
 
 <p align="center">
-  <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="88%">
+  <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="78%">
 </p>
 
 
@@ -231,7 +231,7 @@ CoSPlay generalizes across different model families and scales, showing that the
 ---
 
 <p align="center">
-  <img src="assets/Cosplay_scaling_cropped.png" alt="CoSPlay scaling with BoN candidate budget" width="88%">
+  <img src="assets/Cosplay_scaling_cropped.png" alt="CoSPlay scaling with BoN candidate budget" width="78%">
 </p>
 
 
@@ -247,7 +247,7 @@ CoSPlay continues to scale with larger candidate-pool budgets, improving the BoN
 ---
 
 <p align="center">
-  <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="88%">
+  <img src="assets/bon_diversity_tradeoff_curved_frontier_stronger_bon.png" alt="Accuracy-diversity tradeoff with CoSPlay" width="78%">
 </p>
 
 

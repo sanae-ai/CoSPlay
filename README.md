@@ -98,35 +98,24 @@ cd CosPlay
 Create an environment and install dependencies:
 
 ```bash
-conda create --name CosPlay python=3.10 -y
-conda activate CosPlay
-
-pip install torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 \
-  --index-url https://download.pytorch.org/whl/cu128
-
-pip install -r requirements.txt
-
-pip install xformers==0.0.33.post1
-pip install flashinfer-python==0.5.3
-
-pip install --no-cache-dir \
-  https://github.com/vllm-project/vllm/releases/download/v0.13.0/vllm-0.13.0+cu128-cp38-abi3-manylinux_2_35_x86_64.whl \
-  --extra-index-url https://download.pytorch.org/whl/cu128
-
-MAX_JOBS=4 pip install flash-attn==2.8.3 --no-build-isolation
+bash setup_env.sh
 ```
+
+The script initializes `conda` correctly for non-interactive bash, creates the `CosPlay` environment, and installs the CUDA-sensitive packages one step at a time. If your GPU, driver, or CUDA wheel stack differs from CUDA 12.8, override the relevant variables before running it, for example `TORCH_INDEX_URL`, `VLLM_WHEEL_URL`, `VLLM_EXTRA_INDEX_URL`, or `MAX_JOBS`.
 
 ### ⬇️ Download Dataset
 
-We provide the benchmark datasets used by CoSPlay on Hugging Face, including `CodeContests`, `LiveBench`, `LiveCodeBench`, and `CodeForces`. The evaluation scripts read dataset files from `CURE_data/<dataset_file_stem>.json`.
+We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-Download the chunked evaluation datasets used by the default evaluation script:
+#### Small Dataset Shards
+
+These are the small split files used by the default evaluation scripts. Use this option for normal reproduction and quick checks.
 
 ```bash
 python data/download_data.py
 ```
 
-List available dataset shards:
+List available small shards:
 
 ```bash
 python data/download_data.py --list
@@ -138,10 +127,18 @@ Download selected shards only:
 python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
 ```
 
-The four complete benchmark files are much larger than the shards and are optional. Download them only if you need full-dataset reprocessing:
+#### Four Full Benchmark Datasets
+
+These are the four complete benchmark files: `CodeContests.json`, `CodeForces.json`, `LiveBench.json`, and `LiveCodeBench.json`. They are much larger than the small shards, so download them only for full-dataset reprocessing.
 
 ```bash
 python data/download_data.py --group full
+```
+
+List available full benchmark files:
+
+```bash
+python data/download_data.py --group full --list
 ```
 
 Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).

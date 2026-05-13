@@ -94,32 +94,34 @@ git clone https://github.com/sanae-ai/CosPlay.git
 cd CosPlay
 ```
 
-Create an environment:
+Create an environment and install dependencies:
 
 ```bash
-conda create -n cosplay python=3.10
-conda activate cosplay
+conda create --name CosPlay python=3.10 -y
+conda activate CosPlay
+
+pip install torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 \
+  --index-url https://download.pytorch.org/whl/cu128
+
+pip install -r requirements.txt
+
+pip install xformers==0.0.33.post1
+pip install flashinfer-python==0.5.3
+
+pip install --no-cache-dir \
+  https://github.com/vllm-project/vllm/releases/download/v0.13.0/vllm-0.13.0+cu128-cp38-abi3-manylinux_2_35_x86_64.whl \
+  --extra-index-url https://download.pytorch.org/whl/cu128
+
+MAX_JOBS=4 pip install flash-attn==2.8.3 --no-build-isolation
 ```
-
-Install the expected runtime packages:
-
-```bash
-pip install torch transformers vllm openai numpy termcolor jinja2
-```
-
-Depending on your CUDA, PyTorch, vLLM, and cluster setup, you may need to install these packages from the official wheels for your platform.
 
 ## 📦 Data and Logs
-
-This repository does **not** release trained models. CoSPlay is a TTS method that can be applied to a selected base model at evaluation time.
 
 Generated data and evaluation logs are available here:
 
 ```text
 https://huggingface.co/datasets/yomi017/CosPlay
 ```
-
-The main benchmark trends are summarized above; complete generated data and logs are released separately to keep this repository lightweight.
 
 ## 🧩 Benchmarks
 
@@ -132,7 +134,11 @@ CoSPlay evaluates on four coding benchmarks:
 | LiveBench | Recent coding problems from LiveBench. |
 | LiveCodeBench | Recent competitive-programming style problems from LiveCodeBench. |
 
-Evaluation files are placed under `CURE_data/`, and the provided script handles the released dataset files automatically.
+The dataset is also in: 
+
+```text
+https://huggingface.co/datasets/yomi017/CosPlay
+```
 
 ## 🛠️ Comprehensive Evaluation
 

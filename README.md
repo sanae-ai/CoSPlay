@@ -15,7 +15,7 @@
   🧠 <a href="#-methods">Methods</a> •
   ✨ <a href="#-contributions">Contributions</a> •
   🚀 <a href="#-quick-start">Quick Start</a> •
-  📊 <a href="#-interesting-results">Other Results</a> •
+  📊 <a href="#-interesting-results">Main Results</a> •
   📚 <a href="#-citation">Citation</a>
 </p>
 

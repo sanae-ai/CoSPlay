@@ -140,15 +140,15 @@ python data/download_data.py --group full
 
 Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).
 
-## 🛠️ Comprehensive Evaluation
+## 🔥 Run
 
-Run the default open-source evaluation entrypoint:
+Run the default evaluation entrypoint:
 
 ```bash
 CONDA_ENV_NAME=cosplay bash evaluation/eval.sh
 ```
 
-## 📊 Interesting Results
+## 📊 Main Results
 
 <p align="center">
   <img src="assets/generalization_of_cosplay_on_various_models_cropped.png" alt="Generalization of CoSPlay on various base models" width="88%">

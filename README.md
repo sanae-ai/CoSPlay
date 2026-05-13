@@ -146,7 +146,7 @@ python data/download_data.py --group full
 
 Generated data, benchmark datasets, and evaluation logs are hosted at [[Hugging Face]](https://huggingface.co/datasets/yomi017/CosPlay).
 
-## 🔥 Run
+### 🔥 Run
 
 Run the default evaluation entrypoint:
 

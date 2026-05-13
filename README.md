@@ -200,10 +200,13 @@ To reproduce the Signal-style UT efficiency analysis, use
 [`evaluation/Discussion/UT_efficiency.py`](evaluation/Discussion/UT_efficiency.py). The
 script combines code candidates from `--code_dir` with generated UTs from
 `--case_dir`, then recomputes BoN and optionally cluster-based New_BoN metrics.
+Both directories should contain chunked JSON output files such as
+`..._chunk_0.json`, `..._chunk_1.json`, and so on.
 
 ```bash
-CASE_DIR="/path/to/ut_or_case_outputs"
-CODE_DIR="/path/to/code_outputs"
+# Example: CoSPlay-generated UTs on Qwen2.5-7B-Instruct code candidates.
+CASE_DIR="temp_data/main/Cosplay-14b/Cosplay_CodeContests_14b_0/self_play_v2_rounds"
+CODE_DIR="temp_data/main/Qwen2.5-7B-Ins/Qwen2_5_Instruct_CodeContests_7b_0"
 OUT_DIR="outputs/ut_efficiency"
 
 python evaluation/Discussion/UT_efficiency.py \

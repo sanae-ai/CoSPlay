@@ -80,6 +80,8 @@ CoSPlay first generates solution-oriented code ideas and failure-oriented UT ide
 
 ## 🚀 Quick Start
 
+### ⚙️ Setup Environment
+
 Clone the repository:
 
 ```bash
@@ -108,7 +110,7 @@ pip install --no-cache-dir \
 MAX_JOBS=4 pip install flash-attn==2.8.3 --no-build-isolation
 ```
 
-### ⚙️ Download Dataset
+### ⬇️ Download Dataset
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face, including `CodeContests`, `LiveBench`, `LiveCodeBench`, and `CodeForces`. The evaluation scripts read dataset files from `CURE_data/<dataset_file_stem>.json`.
 

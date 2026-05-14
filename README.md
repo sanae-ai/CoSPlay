@@ -106,38 +106,60 @@ The script initializes `conda` correctly for non-interactive bash, creates the `
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-#### Small Datasets
+#### Main-Table Chunked Datasets
 
-Use the small evaluation files for normal reproduction and quick checks. You can also browse them directly at [Datasets/CURE_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data).
+Use the chunked main-table benchmark files for normal reproduction and quick
+checks. You can browse them directly at
+[Datasets/CURE_data/main/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/main/chunked).
 
 ```bash
 python data/download_data.py
 ```
 
-List available small datasets:
+List available main-table chunks:
 
 ```bash
 python data/download_data.py --list
 ```
 
-Download selected files only, for example [LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveBench_chunk_0.json) and [CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeForces_chunk_0.json):
+Download selected files only, for example
+[LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/chunked/LiveBench_chunk_0.json)
+and
+[CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/chunked/CodeForces_chunk_0.json):
 
 ```bash
 python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
 ```
 
-#### Four Full Benchmark Datasets
+#### Four Full Main-Table Datasets
 
-These are the four complete benchmark files: [CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveBench.json), and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/LiveCodeBench.json). They are much larger than the small datasets, so download them only for full-dataset reprocessing.
+These are the four complete benchmark files:
+[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/CodeContests.json),
+[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/CodeForces.json),
+[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/LiveBench.json),
+and
+[LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/LiveCodeBench.json).
+They are much larger than the chunked datasets, so download them only for
+full-dataset reprocessing.
 
 ```bash
-python data/download_data.py --group full
+python data/download_data.py --group main-full
 ```
 
 List available full benchmark files:
 
 ```bash
-python data/download_data.py --group full --list
+python data/download_data.py --group main-full --list
+```
+
+#### Generalization Datasets
+
+The small-table/generalization benchmark shards are separate from the main-table
+datasets and live under
+[Datasets/CURE_data/generalization](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/generalization).
+
+```bash
+python data/download_data.py --group generalization
 ```
 
 Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).

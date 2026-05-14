@@ -8,8 +8,24 @@ from huggingface_hub import HfApi, hf_hub_download
 DEFAULT_REPO_ID = "yomi017/CosPlay"
 DATA_PREFIX = "Datasets/CURE_data"
 
-# These four files are the complete benchmark dumps. They are useful for
-# full reprocessing, but they are much larger than the chunked files used by
+# Remote dataset layout:
+#   Datasets/CURE_data/main/chunked/      main-table benchmark shards
+#   Datasets/CURE_data/main/full/         four complete main-table benchmarks
+#   Datasets/CURE_data/generalization/    small-table/generalization shards
+GROUP_PREFIXES = {
+    "main-chunked": f"{DATA_PREFIX}/main/chunked",
+    "main-full": f"{DATA_PREFIX}/main/full",
+    "main": f"{DATA_PREFIX}/main",
+    "generalization": f"{DATA_PREFIX}/generalization",
+}
+GROUP_ALIASES = {
+    # Backward-compatible names used by older README examples.
+    "shards": "main-chunked",
+    "full": "main-full",
+}
+
+# These four files are the complete main-table benchmark dumps. They are useful
+# for full reprocessing, but they are much larger than the chunked files used by
 # the default evaluation scripts, so they are not downloaded by default.
 FULL_DATASETS = {
     "CodeContests.json",
@@ -29,9 +45,17 @@ def normalize_dataset_path(name: str) -> str:
         return name
     if name.startswith("Datasets/"):
         return name
+    if name.startswith(("main/", "generalization/")):
+        return f"{DATA_PREFIX}/{name}"
+
     if not name.endswith(".json"):
         name = f"{name}.json"
-    return f"{DATA_PREFIX}/{name}"
+
+    if name.startswith("LB_LCB_CC_CF_200"):
+        return f"{GROUP_PREFIXES['generalization']}/{name}"
+    if name in FULL_DATASETS:
+        return f"{GROUP_PREFIXES['main-full']}/{name}"
+    return f"{GROUP_PREFIXES['main-chunked']}/{name}"
 
 
 def list_dataset_files(repo_id: str, revision: str | None) -> list[str]:
@@ -48,17 +72,13 @@ def list_dataset_files(repo_id: str, revision: str | None) -> list[str]:
 
 
 def filter_by_group(paths: list[str], group: str) -> list[str]:
-    """Split chunked evaluation files from the four complete benchmark files."""
+    """Split main-table chunked/full files from generalization files."""
+    group = GROUP_ALIASES.get(group, group)
+
     if group == "all":
         return paths
-
-    def is_full_dataset(path: str) -> bool:
-        return Path(path).name in FULL_DATASETS
-
-    if group == "full":
-        return [path for path in paths if is_full_dataset(path)]
-    if group == "shards":
-        return [path for path in paths if not is_full_dataset(path)]
+    if group in GROUP_PREFIXES:
+        return [path for path in paths if path.startswith(f"{GROUP_PREFIXES[group]}/")]
 
     raise ValueError(f"Unknown dataset group: {group}")
 
@@ -114,12 +134,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--group",
-        choices=["shards", "full", "all"],
-        default="shards",
+        choices=["main-chunked", "main-full", "main", "generalization", "all", "shards", "full"],
+        default="main-chunked",
         help=(
             "Which dataset group to download when --dataset is omitted. "
-            "'shards' downloads chunked files only; 'full' downloads the four "
-            "complete benchmark files; 'all' downloads both. Default: shards."
+            "'main-chunked' downloads main-table shards; 'main-full' downloads "
+            "the four complete main-table files; 'generalization' downloads "
+            "small-table/generalization shards; 'main' downloads both main "
+            "groups; 'all' downloads every CURE_data file. Legacy aliases: "
+            "'shards' = 'main-chunked', 'full' = 'main-full'. "
+            "Default: main-chunked."
         ),
     )
     parser.add_argument(
@@ -159,7 +183,7 @@ def main() -> None:
         paths = list_dataset_files(args.repo_id, args.revision)
         paths = paths if args.dataset else filter_by_group(paths, args.group)
         for path in paths:
-            print(Path(path).name)
+            print(path.removeprefix(f"{DATA_PREFIX}/"))
         return
 
     if args.dataset:

@@ -106,60 +106,60 @@ The script initializes `conda` correctly for non-interactive bash, creates the `
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-#### Main-Table Chunked Datasets
+#### Full Dataset Shards
 
-Use the chunked main-table benchmark files for normal reproduction and quick
+Use the chunked Full Dataset benchmark files for normal reproduction and quick
 checks. You can browse them directly at
-[Datasets/CURE_data/main/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/main/chunked).
+[Datasets/CURE_data/Full_Dataset/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Full_Dataset/chunked).
 
 ```bash
 python data/download_data.py
 ```
 
-List available main-table chunks:
+List available Full Dataset chunks:
 
 ```bash
 python data/download_data.py --list
 ```
 
 Download selected files only, for example
-[LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/chunked/LiveBench_chunk_0.json)
+[LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/LiveBench_chunk_0.json)
 and
-[CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/chunked/CodeForces_chunk_0.json):
+[CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/CodeForces_chunk_0.json):
 
 ```bash
 python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
 ```
 
-#### Four Full Main-Table Datasets
+#### Complete Full Dataset
 
 These are the four complete benchmark files:
-[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/CodeContests.json),
-[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/CodeForces.json),
-[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/LiveBench.json),
+[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json),
+[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json),
+[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json),
 and
-[LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/main/full/LiveCodeBench.json).
+[LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json).
 They are much larger than the chunked datasets, so download them only for
 full-dataset reprocessing.
 
 ```bash
-python data/download_data.py --group main-full
+python data/download_data.py --group full-dataset-complete
 ```
 
 List available full benchmark files:
 
 ```bash
-python data/download_data.py --group main-full --list
+python data/download_data.py --group full-dataset-complete --list
 ```
 
-#### Generalization Datasets
+#### Small Dataset
 
-The small-table/generalization benchmark shards are separate from the main-table
-datasets and live under
-[Datasets/CURE_data/generalization](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/generalization).
+The Small Dataset benchmark shards are separate from the Full Dataset files and
+live under
+[Datasets/CURE_data/Small_Dataset](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Small_Dataset).
 
 ```bash
-python data/download_data.py --group generalization
+python data/download_data.py --group small-dataset
 ```
 
 Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).

@@ -9,22 +9,27 @@ DEFAULT_REPO_ID = "yomi017/CosPlay"
 DATA_PREFIX = "Datasets/CURE_data"
 
 # Remote dataset layout:
-#   Datasets/CURE_data/main/chunked/      main-table benchmark shards
-#   Datasets/CURE_data/main/full/         four complete main-table benchmarks
-#   Datasets/CURE_data/generalization/    small-table/generalization shards
+#   Datasets/CURE_data/Full_Dataset/chunked/     full-dataset benchmark shards
+#   Datasets/CURE_data/Full_Dataset/complete/    four complete full-dataset files
+#   Datasets/CURE_data/Small_Dataset/            small-dataset shards
 GROUP_PREFIXES = {
-    "main-chunked": f"{DATA_PREFIX}/main/chunked",
-    "main-full": f"{DATA_PREFIX}/main/full",
-    "main": f"{DATA_PREFIX}/main",
-    "generalization": f"{DATA_PREFIX}/generalization",
+    "full-dataset-chunked": f"{DATA_PREFIX}/Full_Dataset/chunked",
+    "full-dataset-complete": f"{DATA_PREFIX}/Full_Dataset/complete",
+    "full-dataset": f"{DATA_PREFIX}/Full_Dataset",
+    "small-dataset": f"{DATA_PREFIX}/Small_Dataset",
 }
 GROUP_ALIASES = {
-    # Backward-compatible names used by older README examples.
-    "shards": "main-chunked",
-    "full": "main-full",
+    # Backward-compatible names used by older README examples and scripts.
+    "main-chunked": "full-dataset-chunked",
+    "main-full": "full-dataset-complete",
+    "main": "full-dataset",
+    "generalization": "small-dataset",
+    "shards": "full-dataset-chunked",
+    "full": "full-dataset-complete",
+    "small": "small-dataset",
 }
 
-# These four files are the complete main-table benchmark dumps. They are useful
+# These four files are the complete Full Dataset benchmark dumps. They are useful
 # for full reprocessing, but they are much larger than the chunked files used by
 # the default evaluation scripts, so they are not downloaded by default.
 FULL_DATASETS = {
@@ -42,20 +47,36 @@ def default_output_dir() -> Path:
 def normalize_dataset_path(name: str) -> str:
     name = name.replace("\\", "/")
     if name.startswith(f"{DATA_PREFIX}/"):
-        return name
+        return normalize_legacy_remote_path(name)
     if name.startswith("Datasets/"):
-        return name
-    if name.startswith(("main/", "generalization/")):
+        return normalize_legacy_remote_path(name)
+    if name.startswith(("Full_Dataset/", "Small_Dataset/")):
         return f"{DATA_PREFIX}/{name}"
+    if name.startswith(("main/", "generalization/")):
+        return normalize_legacy_remote_path(f"{DATA_PREFIX}/{name}")
 
     if not name.endswith(".json"):
         name = f"{name}.json"
 
     if name.startswith("LB_LCB_CC_CF_200"):
-        return f"{GROUP_PREFIXES['generalization']}/{name}"
+        return f"{GROUP_PREFIXES['small-dataset']}/{name}"
     if name in FULL_DATASETS:
-        return f"{GROUP_PREFIXES['main-full']}/{name}"
-    return f"{GROUP_PREFIXES['main-chunked']}/{name}"
+        return f"{GROUP_PREFIXES['full-dataset-complete']}/{name}"
+    return f"{GROUP_PREFIXES['full-dataset-chunked']}/{name}"
+
+
+def normalize_legacy_remote_path(path: str) -> str:
+    """Map older public CURE_data paths to the Full/Small Dataset layout."""
+    legacy_prefixes = {
+        f"{DATA_PREFIX}/main/chunked/": f"{GROUP_PREFIXES['full-dataset-chunked']}/",
+        f"{DATA_PREFIX}/main/full/": f"{GROUP_PREFIXES['full-dataset-complete']}/",
+        f"{DATA_PREFIX}/main/": f"{GROUP_PREFIXES['full-dataset']}/",
+        f"{DATA_PREFIX}/generalization/": f"{GROUP_PREFIXES['small-dataset']}/",
+    }
+    for old_prefix, new_prefix in legacy_prefixes.items():
+        if path.startswith(old_prefix):
+            return f"{new_prefix}{path.removeprefix(old_prefix)}"
+    return path
 
 
 def list_dataset_files(repo_id: str, revision: str | None) -> list[str]:
@@ -72,7 +93,7 @@ def list_dataset_files(repo_id: str, revision: str | None) -> list[str]:
 
 
 def filter_by_group(paths: list[str], group: str) -> list[str]:
-    """Split main-table chunked/full files from generalization files."""
+    """Split full-dataset chunked/complete files from small-dataset files."""
     group = GROUP_ALIASES.get(group, group)
 
     if group == "all":
@@ -134,16 +155,31 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--group",
-        choices=["main-chunked", "main-full", "main", "generalization", "all", "shards", "full"],
-        default="main-chunked",
+        choices=[
+            "full-dataset-chunked",
+            "full-dataset-complete",
+            "full-dataset",
+            "small-dataset",
+            "all",
+            "main-chunked",
+            "main-full",
+            "main",
+            "generalization",
+            "shards",
+            "full",
+            "small",
+        ],
+        default="full-dataset-chunked",
         help=(
             "Which dataset group to download when --dataset is omitted. "
-            "'main-chunked' downloads main-table shards; 'main-full' downloads "
-            "the four complete main-table files; 'generalization' downloads "
-            "small-table/generalization shards; 'main' downloads both main "
-            "groups; 'all' downloads every CURE_data file. Legacy aliases: "
-            "'shards' = 'main-chunked', 'full' = 'main-full'. "
-            "Default: main-chunked."
+            "'full-dataset-chunked' downloads Full Dataset shards; "
+            "'full-dataset-complete' downloads the four complete Full Dataset "
+            "files; 'small-dataset' downloads Small Dataset shards; "
+            "'full-dataset' downloads both Full Dataset groups; 'all' "
+            "downloads every CURE_data file. Legacy aliases: 'main-chunked' "
+            "and 'shards' = 'full-dataset-chunked', 'main-full' and 'full' "
+            "= 'full-dataset-complete', 'generalization' and 'small' = "
+            "'small-dataset'. Default: full-dataset-chunked."
         ),
     )
     parser.add_argument(

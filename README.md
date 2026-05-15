@@ -225,30 +225,32 @@ Datasets are resolved as file stems under `CURE_data/`, for example
 
 ### 📈 Signal
 
-To reproduce the Signal-style UT efficiency analysis, use
-[`evaluation/Discussion/UT_efficiency.py`](evaluation/Discussion/UT_efficiency.py). The
-script combines code candidates from `--code_dir` with generated UTs from
-`--case_dir`, then recomputes BoN and optionally cluster-based New_BoN metrics.
-Both directories should contain chunked JSON output files such as
-`..._chunk_0.json`, `..._chunk_1.json`, and so on.
+**Sig.** is the paper's generated-test selection signal: it measures whether a
+generated UT pool ranks hidden-test-correct code above incorrect code when used
+for BoN selection. To reproduce the Signal analysis, use
+[`evaluation/Signal/signal.py`](evaluation/Signal/signal.py). The script pairs a
+code-candidate directory (`--code_dir`) with a generated-UT directory
+(`--case_dir`), executes the generated UTs against the code pool, and recomputes
+BoN plus optional Cluster/New_BoN metrics. Both directories should contain
+matching chunked JSON files such as `..._chunk_0.json` and `..._chunk_1.json`.
 
 ```bash
 # Example: CoSPlay-generated UTs on Qwen2.5-7B-Instruct code candidates.
 CASE_DIR="temp_data/main/Cosplay-14b/Cosplay_CodeContests_14b_0/self_play_v2_rounds"
 CODE_DIR="temp_data/main/Qwen2.5-7B-Ins/Qwen2_5_Instruct_CodeContests_7b_0"
-OUT_DIR="outputs/ut_efficiency"
+OUT_DIR="outputs/signal"
 
-python evaluation/Discussion/UT_efficiency.py \
+python evaluation/Signal/signal.py \
   --case_dir "$CASE_DIR" \
   --code_dir "$CODE_DIR" \
   --out_dir "$OUT_DIR" \
-  --outputs_prefix "CODE_Qwen2.5_Ins_UT_CoSPlay_round_00_CodeContests" \
-  --mode "CODE_Qwen2.5_Ins_UT_CoSPlay_round_00_CodeContests" \
-  --result_subdir "ut_efficiency" \
+  --outputs_prefix "CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests" \
+  --mode "CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests" \
+  --result_subdir "signal" \
   --strict \
   --k_code 16 \
   --k_case 16 \
-  --case_contains "round_00" \
+  --case_contains "round_05" \
   --generation_mode plansearch \
   --compute_new_bon True
 ```

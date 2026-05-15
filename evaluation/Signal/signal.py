@@ -1,4 +1,11 @@
-# batch_merge_and_eval.py
+"""Recompute the paper's Signal metric from generated code and UT outputs.
+
+This file intentionally lives under evaluation/Signal/. Because its filename is
+signal.py, remove this directory from sys.path before importing evaluation
+modules; otherwise Python can shadow the standard-library signal module used by
+multiprocessing.
+"""
+
 import argparse
 import json
 import os
@@ -11,6 +18,8 @@ from typing import Any, Dict, List, Tuple, Optional
 # Reuse interfaces from the evaluation directory.
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 EVAL_DIR = os.path.dirname(THIS_DIR)
+if THIS_DIR in sys.path:
+    sys.path.remove(THIS_DIR)
 if EVAL_DIR not in sys.path:
     sys.path.insert(0, EVAL_DIR)
 

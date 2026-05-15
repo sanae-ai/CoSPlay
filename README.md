@@ -225,14 +225,8 @@ Datasets are resolved as file stems under `CURE_data/`, for example
 
 ### 📈 Signal
 
-**Sig.** is the paper's generated-test selection signal: it measures whether a
-generated UT pool ranks hidden-test-correct code above incorrect code when used
-for BoN selection. To reproduce the Signal analysis, use
-[`evaluation/Signal/signal.py`](evaluation/Signal/signal.py). The script pairs a
-code-candidate directory (`--code_dir`) with a generated-UT directory
-(`--case_dir`), executes the generated UTs against the code pool, and recomputes
-BoN plus optional Cluster/New_BoN metrics. Both directories should contain
-matching chunked JSON files such as `..._chunk_0.json` and `..._chunk_1.json`.
+**Sigal**: BoN accuracy of generated UTs selecting code from Qwen2.5-7B-Ins., which measures the discrimination ability of UTs. To reproduce the Signal analysis, use [`evaluation/Signal/signal.py`](evaluation/Signal/signal.py).
+The script pairs a code-candidate directory (`--code_dir`) with a generated-UT directory (`--case_dir`), executes the generated UTs against the code pool, and recomputes BoN plus optional Cluster metrics. Both directories should contain matching chunked JSON files such as `..._chunk_0.json` and `..._chunk_1.json`.
 
 ```bash
 # Example: CoSPlay-generated UTs on Qwen2.5-7B-Instruct code candidates.
@@ -252,13 +246,13 @@ python evaluation/Signal/signal.py \
   --k_case 16 \
   --case_contains "round_05" \
   --generation_mode plansearch \
-  --compute_new_bon True
+  --compute_cluster True
 ```
 
 Use `--generation_mode plansearch` for CoSPlay-generated UTs and
 `--generation_mode original_resample` for non-CoSPlay UT sources. Keep
 `--strict` enabled for final experiments so mismatched chunks or task IDs stop
-the run instead of being skipped silently. Set `--compute_new_bon False` when
+the run instead of being skipped silently. Set `--compute_cluster False` when
 only default BoN is needed.
 
 ## 📊 Main Results

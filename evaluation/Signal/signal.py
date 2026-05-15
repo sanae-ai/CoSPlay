@@ -384,15 +384,15 @@ def run_exec_and_metrics(
     outputs_name: str,
     out_with_exec_path: str,
     args: SimpleNamespace,
-    compute_new_bon: bool,
+    compute_cluster: bool,
 ) -> Dict[str, Any]:
     data = _load_json_items(merged_json_path)
 
     data = run_all_executions(
         data,
         args,
-        skip_random_ut=not compute_new_bon,
-        compute_new_bon=compute_new_bon,
+        skip_random_ut=not compute_cluster,
+        compute_new_bon=compute_cluster,
     )
 
     old_use_random_ut_cluster = getattr(args, "use_random_ut_cluster", False)
@@ -466,7 +466,7 @@ def batch_merge_and_eval_dir(
     k_case: Optional[int] = None,
     start_chunk: Optional[int] = None,
     end_chunk: Optional[int] = None,
-    compute_new_bon: bool = False,
+    compute_cluster: bool = False,
 ) -> Dict[str, Any]:
     # Archive each configuration into its own subdirectory to avoid mixed outputs.
     config_out_dir = os.path.join(out_dir, outputs_prefix)
@@ -555,7 +555,7 @@ def batch_merge_and_eval_dir(
             outputs_name=f"{outputs_prefix}_chunk_{cid}",
             out_with_exec_path=with_exec_path,
             args=eval_args,
-            compute_new_bon=compute_new_bon,
+            compute_cluster=compute_cluster,
         )
         exec_reports.append(rep_e)
         with_exec_files.append(with_exec_path)
@@ -584,7 +584,7 @@ def batch_merge_and_eval_dir(
 
     final_outputs_name = f"{outputs_prefix}_ALL"
     old_use_random_ut_cluster = getattr(eval_args, "use_random_ut_cluster", False)
-    if compute_new_bon:
+    if compute_cluster:
         _cache_new_bon_from_items(all_data, eval_args)
     elif hasattr(eval_args, "_new_bon_cached"):
         delattr(eval_args, "_new_bon_cached")
@@ -645,7 +645,7 @@ def main():
     ap.add_argument("--k_case", type=int, default=None)
     ap.add_argument("--start_chunk", type=int, default=None, help="optional: start chunk id (inclusive)")
     ap.add_argument("--end_chunk", type=int, default=None, help="optional: end chunk id (inclusive)")
-    ap.add_argument("--compute_new_bon", type=str2bool, default=False, help="run New_BoN execution during each chunk")
+    ap.add_argument("--compute_cluster", type=str2bool, default=False, help="run Cluster execution during each chunk")
 
     args = ap.parse_args()
 
@@ -669,7 +669,7 @@ def main():
         k_case=args.k_case,
         start_chunk=args.start_chunk,
         end_chunk=args.end_chunk,
-        compute_new_bon=args.compute_new_bon,
+        compute_cluster=args.compute_cluster,
     )
 
 

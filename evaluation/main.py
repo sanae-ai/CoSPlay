@@ -54,7 +54,7 @@ def parse_args():
         "--generation_mode",
         type=str,
         default=getattr(ec, "generation_mode", "original"),
-        help='code generation mode: "original", "plansearch", "original_resample"',
+        help='code generation mode: "original", "exp-atk", "original_resample"',
     )
     parser.add_argument(
         "--eval_mode",
@@ -220,7 +220,7 @@ def parse_args():
     args = parser.parse_args()
 
 
-    if args.generation_mode == "plansearch":
+    if args.generation_mode == "exp-atk":
         args.use_multi_stage_generation = True
         args.use_original_resample = False
     elif args.generation_mode == "original_resample":

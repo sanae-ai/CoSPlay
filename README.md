@@ -212,7 +212,7 @@ python -u main.py \
   --dataset CodeContests_chunk_0 \
   --k_code 16 \
   --k_case 16 \
-  --generation_mode plansearch \
+  --generation_mode exp-atk \
   --eval_mode bon \
   --use_idea_attack_ut True \
   --use_self_play True \
@@ -245,11 +245,11 @@ python evaluation/Signal/signal.py \
   --k_code 16 \
   --k_case 16 \
   --case_contains "round_05" \
-  --generation_mode plansearch \
+  --generation_mode exp-atk \
   --compute_cluster True
 ```
 
-Use `--generation_mode plansearch` for CoSPlay-generated UTs and
+Use `--generation_mode exp-atk` for CoSPlay-generated UTs and
 `--generation_mode original_resample` for non-CoSPlay UT sources. Keep
 `--strict` enabled for final experiments so mismatched chunks or task IDs stop
 the run instead of being skipped silently. Set `--compute_cluster False` when

@@ -540,7 +540,7 @@ def _evaluate_bon_mode(data, outputs_name, mean_code, mean_case, args):
         valid_indices = None
 
 
-        if args.generation_mode == "plansearch":
+        if args.generation_mode == "exp-atk":
             case_is_valid = data[i].get("case_is_valid", [True] * all_case_table_i.shape[1])
             valid_indices = [j for j, valid in enumerate(case_is_valid) if valid]
 

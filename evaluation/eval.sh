@@ -100,7 +100,7 @@ K_CASE="${K_CASE:-16}"
 # Final BoN sweep evaluated from the same k=16 generation budget.
 SCALE_TUPLE_LIST="${SCALE_TUPLE_LIST:-[(2, 2), (4, 4), (8, 8), (16, 16)]}"
 PASS_AT_K_LIST="${PASS_AT_K_LIST:-[1,2,4,8,16]}"
-GENERATION_MODE="${GENERATION_MODE:-plansearch}"
+GENERATION_MODE="${GENERATION_MODE:-exp-atk}"
 EVAL_MODE="${EVAL_MODE:-bon}"
 
 # Final method configuration. These flags describe the reported CosPlay setup:

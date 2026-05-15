@@ -325,7 +325,7 @@ def run_all_executions(data, args, *, skip_random_ut=False, compute_new_bon=True
                 
 
 
-                if args.generation_mode == "plansearch":
+                if args.generation_mode == "exp-atk":
                     if case_input is None or case_output is None:
                         continue
                     
@@ -653,7 +653,7 @@ def _compute_new_bon_with_history(data, args, *, print_results=True):
         case_arr = np.array(table, dtype=bool)
         if case_arr.ndim != 2 or case_arr.size == 0:
             continue
-        if getattr(args, "generation_mode", None) == "plansearch":
+        if getattr(args, "generation_mode", None) == "exp-atk":
             case_is_valid = data[i].get("case_is_valid", [True] * case_arr.shape[1])
             valid_indices = [j for j, v in enumerate(case_is_valid) if v]
             case_arr = case_arr[:, valid_indices].copy() if valid_indices else case_arr[:, :0]
@@ -916,7 +916,7 @@ def run_all_executions_generate(data, args):
                 
 
 
-                if args.generation_mode == "plansearch":
+                if args.generation_mode == "exp-atk":
                     if case_input is None or case_output is None:
                         continue
                     

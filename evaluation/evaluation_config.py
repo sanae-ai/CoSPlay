@@ -24,9 +24,9 @@ verbose_logging = False
 
 # Run mode.
 mode = "plan_search_code_only_pass_at_k_debug"
-generation_mode = "plansearch"  # original / original_resample / plansearch
+generation_mode = "exp-atk"  # original / original_resample / exp-atk
 eval_mode = "bon"  # oneshot / passatk / bon
-use_multi_stage_generation = generation_mode == "plansearch"
+use_multi_stage_generation = generation_mode == "exp-atk"
 use_original_resample = generation_mode == "original_resample"
 single_eval = eval_mode == "oneshot"
 eval_pass_at_k_only = eval_mode == "passatk"

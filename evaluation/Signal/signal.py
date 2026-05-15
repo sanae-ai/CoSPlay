@@ -328,7 +328,7 @@ def _case_pass_counts(item: Dict[str, Any], args: SimpleNamespace) -> List[int]:
         return []
 
     rows = table.tolist() if hasattr(table, "tolist") else table
-    if getattr(args, "generation_mode", None) == "plansearch":
+    if getattr(args, "generation_mode", None) == "exp-atk":
         case_is_valid = item.get("case_is_valid", [])
         valid_indices = [j for j, valid in enumerate(case_is_valid) if valid]
         rows = [[row[j] for j in valid_indices if j < len(row)] for row in rows]

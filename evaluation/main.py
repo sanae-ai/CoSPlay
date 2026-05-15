@@ -67,8 +67,24 @@ def parse_args():
     parser.add_argument("--pretrained_model", type=str, default=ec.pretrained_model)
     parser.add_argument("--dataset", type=str, default=ec.dataset)
     parser.add_argument("--use_api", type=str2bool, default=ec.use_api)
-    parser.add_argument("--k_code", type=int, default=ec.k_code)
-    parser.add_argument("--k_case", type=int, default=ec.k_case)
+    parser.add_argument(
+        "--k_code",
+        type=int,
+        default=ec.k_code,
+        help=(
+            "Number of candidate programs. The scaling ablation uses matched "
+            "k_code/k_case budgets such as 2, 4, 8, 16, 32, and 64."
+        ),
+    )
+    parser.add_argument(
+        "--k_case",
+        type=int,
+        default=ec.k_case,
+        help=(
+            "Number of generated unit tests. The full CoSPlay TTS reference "
+            "uses k_code=k_case=16."
+        ),
+    )
     parser.add_argument("--max_model_len", type=int, default=ec.max_model_len)
     parser.add_argument("--max_generation_token", type=int, default=ec.max_generation_token)
     parser.add_argument("--temp", type=float, default=ec.temp)
@@ -155,11 +171,28 @@ def parse_args():
     parser.add_argument("--use_idea_attack_ut", type=str2bool, default=getattr(ec, "use_idea_attack_ut", False))
 
     parser.add_argument("--num_ideas", type=int, default=getattr(ec, "num_ideas", 1))
-    parser.add_argument("--self_consistency_num", type=int, default=getattr(ec, "self_consistency_num", 1))
+    parser.add_argument(
+        "--self_consistency_num",
+        type=int,
+        default=getattr(ec, "self_consistency_num", 1),
+        help=(
+            "Number of samples used for UT self-consistency voting in the TTS "
+            "ablation path."
+        ),
+    )
     parser.add_argument("--self_play_round", type=int, default=getattr(ec, "self_play_round", 1))
     parser.add_argument("--is_empty", type=str2bool, default=getattr(ec, "is_empty", True))
     parser.add_argument("--ut_vote_by_code", type=str2bool, default=getattr(ec, "ut_vote_by_code", False))
-    parser.add_argument("--use_self_play", type=str2bool, default=getattr(ec, "use_self_play", True))
+    parser.add_argument(
+        "--use_self_play",
+        type=str2bool,
+        default=getattr(ec, "use_self_play", True),
+        help=(
+            "Enable the CoSPlay self-play loop. Setting this to False with "
+            "self_consistency_num > 1 corresponds to the self-consistency-only "
+            "TTS ablation."
+        ),
+    )
 
     parser.add_argument("--ut_accuracy_target", type=float, default=getattr(ec, "ut_accuracy_target", 0.5))
     parser.add_argument("--ut_regen_max_attempts", type=int, default=getattr(ec, "ut_regen_max_attempts", 3))

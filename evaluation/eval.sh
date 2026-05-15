@@ -88,7 +88,10 @@ DATASETS=(
   "LiveCodeBench_chunk_10"
 )
 
-# Final CosPlay setting: generate 16 candidate programs and 16 candidate tests.
+# Final CoSPlay setting: generate 16 candidate programs and 16 candidate tests.
+# This k=16 setting is the full CoSPlay reference used in the TTS ablation.
+# The scaling study sweeps matched candidate budgets by setting
+# K_CODE=K_CASE to 2, 4, 8, 16, 32, or 64.
 SINGLE_EVAL=False
 USE_API=False
 K_CODE="${K_CODE:-16}"
@@ -108,6 +111,9 @@ PROMPT_ROLE_MODE="${PROMPT_ROLE_MODE:-3}"
 ABLATION="${ABLATION:-only_stage2}"
 USE_ALL_SECOND_ORDER_OBS="${USE_ALL_SECOND_ORDER_OBS:-True}"
 USE_IDEA_ATTACK_UT="${USE_IDEA_ATTACK_UT:-True}"
+# Number of self-consistency samples used when repairing or regenerating UTs.
+# The TTS self-consistency ablations compare this voting path with and without
+# the full self-play UT resampling loop.
 SELF_CONSISTENCY_NUM="${SELF_CONSISTENCY_NUM:-4}"
 UT_VOTE_BY_CODE="${UT_VOTE_BY_CODE:-False}"
 USE_SELF_PLAY="${USE_SELF_PLAY:-True}"

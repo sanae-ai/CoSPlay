@@ -164,14 +164,13 @@ python data/download_data.py --group small-dataset
 
 Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).
 
-The Hugging Face `temp_data` tree follows the paper settings:
 
-- [`temp_data/main`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/main): main-table runs on the Full Dataset.
-- [`temp_data/generalization`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/generalization): Small Dataset transfer/generalization runs.
-- [`temp_data/scaling`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
-- [`temp_data/tts`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay references and the self-consistency sampling variants with and without self-play UT resampling.
+- [temp_data/main](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/main): main-table runs on the Full Dataset.
+- [temp_data/generalization](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/generalization): Small Dataset transfer/generalization runs.
+- [temp_data/scaling](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
+- [Logs/tts](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay and other tts method.
 
-The TTS baselines store intermediate artifacts in different formats, so their `temp_data` files are not all consumed the same way. For example, some methods store a materialized selected solution, some require reconstructing pass@1 from candidate pools and generated tests, and some assertion-style tests must be checked against stdin/stdout-wrapped execution. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
+The TTS baselines store intermediate artifacts in different formats, so their `temp_data` files are not all consumed the same way. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
 
 ### 🔥 Run
 

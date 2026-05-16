@@ -171,6 +171,8 @@ The Hugging Face `temp_data` tree follows the paper settings:
 - [`temp_data/scaling`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
 - [`temp_data/tts`](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay references and the self-consistency sampling variants with and without self-play UT resampling.
 
+The TTS baselines store intermediate artifacts in different formats, so their `temp_data` files are not all consumed the same way. For example, some methods store a materialized selected solution, some require reconstructing pass@1 from candidate pools and generated tests, and some assertion-style tests must be checked against stdin/stdout-wrapped execution. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
+
 ### 🔥 Run
 
 Run the default evaluation entrypoint:

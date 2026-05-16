@@ -108,9 +108,7 @@ We provide the benchmark datasets used by CoSPlay on Hugging Face. The download 
 
 #### Full Dataset Shards
 
-Use the chunked Full Dataset benchmark files for normal reproduction and quick
-checks. You can browse them directly at
-[Datasets/CURE_data/Full_Dataset/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Full_Dataset/chunked).
+Use the chunked Full Dataset benchmark files for normal reproduction and quick checks. You can browse them directly at [Datasets/CURE_data/Full_Dataset/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Full_Dataset/chunked).
 
 ```bash
 python data/download_data.py
@@ -122,10 +120,7 @@ List available Full Dataset chunks:
 python data/download_data.py --list
 ```
 
-Download selected files only, for example
-[LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/LiveBench_chunk_0.json)
-and
-[CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/CodeForces_chunk_0.json):
+Download selected files only, for example [LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/LiveBench_chunk_0.json) and [CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/CodeForces_chunk_0.json):
 
 ```bash
 python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
@@ -134,13 +129,7 @@ python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
 #### Complete Full Dataset
 
 These are the four complete benchmark files:
-[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json),
-[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json),
-[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json),
-and
-[LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json).
-They are much larger than the chunked datasets, so download them only for
-full-dataset reprocessing.
+[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json), and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json). They are much larger than the chunked datasets, so download them only for full-dataset reprocessing.
 
 ```bash
 python data/download_data.py --group full-dataset-complete
@@ -154,13 +143,13 @@ python data/download_data.py --group full-dataset-complete --list
 
 #### Small Dataset
 
-The Small Dataset benchmark shards are separate from the Full Dataset files and
-live under
-[Datasets/CURE_data/Small_Dataset](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Small_Dataset).
+To reduce computational cost, experiments other than the main full-benchmark results use a 200-problem benchmark. For each random seed, we sample 50 problems from each of CodeContests, CodeForces, LiveBench, and LiveCodeBench, resulting in 200 problems in total. We use three random seeds to construct three independent 200-problem benchmarks and report the averaged results across them. These benchmark shards are separate from the Full Dataset files and live under [Datasets/CURE_data/Small_Dataset](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Small_Dataset).
 
 ```bash
 python data/download_data.py --group small-dataset
 ```
+
+#### Temp Data
 
 Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).
 
@@ -180,8 +169,7 @@ Run the default evaluation entrypoint:
 CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
 ```
 
-By default, this evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`,
-`K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`.
+By default, this evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`, `K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`.
 
 Evaluate a local checkpoint or another Hugging Face model:
 
@@ -221,12 +209,11 @@ python -u main.py \
   --gpu_groups '[[0],[1]]'
 ```
 
-Datasets are resolved as file stems under `CURE_data/`, for example
-`--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
+Datasets are resolved as file stems under `CURE_data/`, for example `--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
 
 ### 📈 Signal
 
-**Sigal**: BoN accuracy of generated UTs selecting code from Qwen2.5-7B-Ins., which measures the discrimination ability of UTs. To reproduce the Signal analysis, use [`evaluation/Signal/signal.py`](evaluation/Signal/signal.py).
+**Signal**: BoN accuracy of generated UTs selecting code from Qwen2.5-7B-Ins., which measures the discrimination ability of UTs. To reproduce the Signal analysis, use [`evaluation/Signal/signal.py`](evaluation/Signal/signal.py).
 The script pairs a code-candidate directory (`--code_dir`) with a generated-UT directory (`--case_dir`), executes the generated UTs against the code pool, and recomputes BoN plus optional Cluster metrics. Both directories should contain matching chunked JSON files such as `..._chunk_0.json` and `..._chunk_1.json`.
 
 ```bash
@@ -250,11 +237,7 @@ python evaluation/Signal/signal.py \
   --compute_cluster True
 ```
 
-Use `--generation_mode exp-atk` for CoSPlay-generated UTs and
-`--generation_mode original_resample` for non-CoSPlay UT sources. Keep
-`--strict` enabled for final experiments so mismatched chunks or task IDs stop
-the run instead of being skipped silently. Set `--compute_cluster False` when
-only default BoN is needed.
+Use `--generation_mode exp-atk` for CoSPlay-generated UTs and `--generation_mode original_resample` for non-CoSPlay UT sources. Keep `--strict` enabled for final experiments so mismatched chunks or task IDs stop the run instead of being skipped silently. Set `--compute_cluster False` when only default BoN is needed.
 
 ## 📊 Main Results
 

@@ -159,7 +159,28 @@ Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/
 - [temp_data/scaling](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
 - [Logs/tts](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay and other tts method.
 
-The TTS baselines store intermediate artifacts in different formats, so their `temp_data` files are not all consumed the same way. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
+After downloading `temp_data`, you can recover the matrix-based metrics without 
+The same command can be launched through the commented bash wrapper [`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh):
+
+```bash
+# Default: read ./temp_data final JSONs and write outputs/temp_data_metrics.
+bash evaluation/Temp_Data/temp_data.sh
+
+# Scaling-only example.
+ROOT=/path/to/temp_data/scaling \
+OUT_DIR=outputs/scaling_metrics \
+bash evaluation/Temp_Data/temp_data.sh
+
+# Round-05 TTS example.
+ROOT=/path/to/temp_data/tts \
+KIND=round \
+ROUND_ID=05 \
+OUT_DIR=outputs/tts_round05_metrics \
+bash evaluation/Temp_Data/temp_data.sh
+```
+
+
+The TTS baselines under `Logs/tts` store artifacts in different formats, so their files are not all consumed the same way. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
 
 ### 🔥 Run
 

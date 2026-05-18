@@ -159,8 +159,17 @@ Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/
 - [temp_data/scaling](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
 - [Logs/tts](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay and other tts method.
 
-After downloading `temp_data`, you can recover the matrix-based metrics without 
-The same command can be launched through the commented bash wrapper [`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh):
+After downloading `temp_data`, you can recover the matrix-based metrics for any
+CoSPlay temp-data split without regenerating model outputs or re-executing code.
+The same matrix fields are used by `temp_data/main`, `temp_data/generalization`,
+`temp_data/scaling`, and `temp_data/tts`: `test_bool_table` for pass@k,
+`case_bool_table` for generated-UT BoN, and `new_bon_cluster_info["new_bon"]`
+for the paper-facing output-consensus clustering metric. The helper writes
+`per_file_metrics.csv`, `per_run_metrics.csv`, `per_setting_metrics.csv`, and
+`metrics_summary.json`.
+
+The command can be launched through the commented bash wrapper
+[`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh):
 
 ```bash
 # Default: read ./temp_data final JSONs and write outputs/temp_data_metrics.
@@ -171,16 +180,20 @@ ROOT=/path/to/temp_data/scaling \
 OUT_DIR=outputs/scaling_metrics \
 bash evaluation/Temp_Data/temp_data.sh
 
-# Round-05 TTS example.
+# Saved self-play round example. This works for any split/setting that contains
+# self_play_v2_rounds/round_XX_results_eval_*.json files.
 ROOT=/path/to/temp_data/tts \
 KIND=round \
 ROUND_ID=05 \
-OUT_DIR=outputs/tts_round05_metrics \
+OUT_DIR=outputs/round05_metrics \
 bash evaluation/Temp_Data/temp_data.sh
 ```
 
 
-The TTS baselines under `Logs/tts` store artifacts in different formats, so their files are not all consumed the same way. See the README in each TTS method directory for the exact selected-code field and evaluation wrapper.
+The `Logs/tts` baseline artifacts are separate from these CoSPlay temp-data
+matrices. Those methods store selected code and tests in different formats, so
+their README files describe the method-specific selected-code field and
+evaluation wrapper.
 
 ### 🔥 Run
 

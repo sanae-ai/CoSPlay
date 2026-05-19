@@ -197,51 +197,24 @@ evaluation wrapper.
 
 ### 🔥 Run
 
-Run the default evaluation entrypoint:
+All evaluations use the same shell entrypoint. Configure the model, sampling
+budget, self-play rounds, repeat IDs, and GPU placement through environment
+variables before calling `evaluation/eval.sh`:
 
 ```bash
-CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
+MODEL=Qwen/Qwen2.5-14B-Instruct \
+K_CODE=16 \
+K_CASE=16 \
+SELF_PLAY_ROUND=5 \
+EVAL_MODE=bon \
+REPEAT_IDS=1,2,3 \
+CUDA_VISIBLE_DEVICES=0,1 \
+GPU_GROUPS='[[0],[1]]' \
+bash evaluation/eval.sh
 ```
 
-By default, this evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`, `K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`.
+Without overrides, the script evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`, `K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`. `MODEL` can be either a Hugging Face model name or a local checkpoint path; `REPEAT_IDS` runs repeated trials; and `CUDA_VISIBLE_DEVICES` together with `GPU_GROUPS` controls which GPUs are used by each evaluation group.
 
-Evaluate another Hugging Face model:
-
-```bash
-MODEL=/path/to/model CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
-```
-
-```bash
-MODEL=Qwen/Qwen2.5-14B-Instruct CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
-```
-
-Run repeated experiments or control GPU placement:
-
-```bash
-REPEAT_IDS=1,2,3 CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
-```
-
-```bash
-CUDA_VISIBLE_DEVICES=0,1 GPU_GROUPS='[[0],[1]]' CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
-```
-
-For debugging one dataset, call the Python entrypoint from `evaluation/`:
-
-```bash
-cd evaluation
-python -u main.py \
-  --use_api False \
-  --pretrained_model Qwen/Qwen2.5-7B-Instruct \
-  --dataset CodeContests_chunk_0 \
-  --k_code 16 \
-  --k_case 16 \
-  --generation_mode exp-atk \
-  --eval_mode bon \
-  --use_idea_attack_ut True \
-  --use_self_play True \
-  --self_play_round 5 \
-  --gpu_groups '[[0],[1]]'
-```
 
 Datasets are resolved as file stems under `CURE_data/`, for example `--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
 

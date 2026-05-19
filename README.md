@@ -172,23 +172,12 @@ The command can be launched through the commented bash wrapper
 [`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh):
 
 ```bash
-# Default: read ./temp_data final JSONs and write outputs/temp_data_metrics.
-bash evaluation/Temp_Data/temp_data.sh
-
-# Scaling-only example.
-ROOT=/path/to/temp_data/scaling \
-OUT_DIR=outputs/scaling_metrics \
-bash evaluation/Temp_Data/temp_data.sh
-
-# Saved self-play round example. This works for any split/setting that contains
-# self_play_v2_rounds/round_XX_results_eval_*.json files.
-ROOT=/path/to/temp_data/tts \
-KIND=round \
-ROUND_ID=05 \
-OUT_DIR=outputs/round05_metrics \
+export ROOT=/path/to/temp_data/tts       # temp_data root or JSON file
+export KIND=round                        # round: saved self-play rounds
+export ROUND_ID=05                       # self-play round id; leave empty to include all saved rounds
+export OUT_DIR=outputs/round05_metrics   # output directory for CSV and JSON summaries
 bash evaluation/Temp_Data/temp_data.sh
 ```
-
 
 The `Logs/tts` baseline artifacts are separate from these CoSPlay temp-data
 matrices. Those methods store selected code and tests in different formats, so

@@ -106,48 +106,25 @@ The script initializes `conda` correctly for non-interactive bash, creates the `
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-#### Full Dataset Shards
-
-Use the chunked Full Dataset benchmark files for normal reproduction and quick checks. You can browse them directly at [Datasets/CURE_data/Full_Dataset/chunked](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Full_Dataset/chunked).
-
-```bash
-python data/download_data.py
-```
-
-List available Full Dataset chunks:
+The same wrapper downloads chunked Full Dataset shards, complete Full Dataset
+files, Small Dataset shards, or selected JSON files:
 
 ```bash
-python data/download_data.py --list
+export GROUP=full-dataset-chunked                  # full-dataset-chunked, full-dataset-complete, small-dataset
+export DATASETS=""                                 # optional comma-separated file stems, e.g. LiveBench_chunk_0,CodeForces_chunk_0
+export OUTPUT_DIR="CURE_data"                      # local directory used by evaluation scripts
+bash data/download_data.sh
 ```
 
-Download selected files only, for example [LiveBench_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/LiveBench_chunk_0.json) and [CodeForces_chunk_0.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/chunked/CodeForces_chunk_0.json):
-
-```bash
-python data/download_data.py --dataset LiveBench_chunk_0 CodeForces_chunk_0
-```
-
-#### Complete Full Dataset
-
-These are the four complete benchmark files:
-[CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json), and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json). They are much larger than the chunked datasets, so download them only for full-dataset reprocessing.
-
-```bash
-python data/download_data.py --group full-dataset-complete
-```
-
-List available full benchmark files:
-
-```bash
-python data/download_data.py --group full-dataset-complete --list
-```
-
-#### Small Dataset
-
-To reduce computational cost, experiments other than the main full-benchmark results use a 200-problem benchmark. For each random seed, we sample 50 problems from each of CodeContests, CodeForces, LiveBench, and LiveCodeBench, resulting in 200 problems in total. We use three random seeds to construct three independent 200-problem benchmarks and report the averaged results across them. These benchmark shards are separate from the Full Dataset files and live under [Datasets/CURE_data/Small_Dataset](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Datasets/CURE_data/Small_Dataset).
-
-```bash
-python data/download_data.py --group small-dataset
-```
+`full-dataset-chunked` is the default and is recommended for normal
+reproduction and quick checks. The four complete Full Dataset files
+([CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json),
+[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json),
+[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json),
+and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json))
+are much larger, so use `GROUP=full-dataset-complete` only for full-dataset
+reprocessing. Use `GROUP=small-dataset` for the 200-problem benchmarks used by
+non-main experiments.
 
 #### Temp Data
 
@@ -173,7 +150,6 @@ The command can be launched through the commented bash wrapper
 
 ```bash
 export ROOT=/path/to/temp_data/tts       # temp_data root or JSON file
-export KIND=round                        # round: saved self-play rounds
 export ROUND_ID=05                       # self-play round id; leave empty to include all saved rounds
 export OUT_DIR=outputs/round05_metrics   # output directory for CSV and JSON summaries
 bash evaluation/Temp_Data/temp_data.sh
@@ -191,12 +167,10 @@ budget, self-play rounds, repeat IDs, and GPU placement through environment
 variables before calling `evaluation/eval.sh`:
 
 ```bash
-export CONDA_ENV_NAME=CosPlay            # conda environment name
 export MODEL=Qwen/Qwen2.5-14B-Instruct   # Hugging Face model name
 export K_CODE=16                         # number of code candidates
 export K_CASE=16                         # number of generated test cases
 export SELF_PLAY_ROUND=5                 # self-play refinement rounds
-export EVAL_MODE=bon                     # evaluation mode
 export REPEAT_IDS=1,2,3                  # repeated trial IDs
 export CUDA_VISIBLE_DEVICES=0,1          # visible GPUs
 export GPU_GROUPS='[[0],[1]]'            # GPU groups used by parallel workers
@@ -211,24 +185,19 @@ Datasets are resolved as file stems under `CURE_data/`, for example `--dataset C
 The script pairs a code-candidate directory (`--code_dir`) with a generated-UT directory (`--case_dir`), executes the generated UTs against the code pool, and recomputes BoN plus optional Cluster metrics. Both directories should contain matching chunked JSON files such as `..._chunk_0.json` and `..._chunk_1.json`.
 
 ```bash
-# Example: CoSPlay-generated UTs on Qwen2.5-7B-Instruct code candidates.
-CASE_DIR="temp_data/main/Cosplay-14b/Cosplay_CodeContests_14b_0/self_play_v2_rounds"
-CODE_DIR="temp_data/main/Qwen2.5-7B-Ins/Qwen2_5_Instruct_CodeContests_7b_0"
-OUT_DIR="outputs/signal"
-
-python evaluation/Signal/signal.py \
-  --case_dir "$CASE_DIR" \
-  --code_dir "$CODE_DIR" \
-  --out_dir "$OUT_DIR" \
-  --outputs_prefix "CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests" \
-  --mode "CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests" \
-  --result_subdir "signal" \
-  --strict \
-  --k_code 16 \
-  --k_case 16 \
-  --case_contains "round_05" \
-  --generation_mode exp-atk \
-  --compute_cluster True
+export CASE_DIR="temp_data/main/Cosplay-14b/Cosplay_CodeContests_14b_0/self_play_v2_rounds"   # generated-UT directory
+export CODE_DIR="temp_data/main/Qwen2.5-7B-Ins/Qwen2_5_Instruct_CodeContests_7b_0"            # code-candidate directory
+export OUT_DIR="outputs/signal"                                                              # output directory
+export OUTPUTS_PREFIX="CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests"                    # output filename prefix
+export MODE="CODE_Qwen2.5_Ins_UT_CoSPlay_round_05_CodeContests"                              # run label written to metrics
+export RESULT_SUBDIR="signal"                                                                # subdirectory for result files
+export K_CODE=16                                                                             # number of code candidates
+export K_CASE=16                                                                             # number of generated test cases
+export CASE_CONTAINS="round_05"                                                              # filter generated-UT files
+export GENERATION_MODE=exp-atk                                                               # exp-atk for CoSPlay UTs
+export COMPUTE_CLUSTER=True                                                                  # recompute Cluster metrics
+export STRICT=True                                                                           # stop on mismatched chunks or task IDs
+bash evaluation/Signal/signal.sh
 ```
 
 Use `--generation_mode exp-atk` for CoSPlay-generated UTs and `--generation_mode original_resample` for non-CoSPlay UT sources. Keep `--strict` enabled for final experiments so mismatched chunks or task IDs stop the run instead of being skipped silently. Set `--compute_cluster False` when only default BoN is needed.

@@ -106,25 +106,18 @@ The script initializes `conda` correctly for non-interactive bash, creates the `
 
 We provide the benchmark datasets used by CoSPlay on Hugging Face. The download script writes JSON files to `CURE_data/`, which is where the evaluation scripts expect to find them.
 
-The same wrapper downloads chunked Full Dataset shards, complete Full Dataset
-files, Small Dataset shards, or selected JSON files:
+Set `GROUP` to choose the dataset split, set `DATASETS` only when downloading specific JSON files, and keep `OUTPUT_DIR` as `CURE_data` unless your evaluation scripts read datasets from another directory:
 
 ```bash
-export GROUP=full-dataset-chunked                  # full-dataset-chunked, full-dataset-complete, small-dataset
+export GROUP=full-dataset                          # full-dataset, full-dataset-chunk, small-dataset
 export DATASETS=""                                 # optional comma-separated file stems, e.g. LiveBench_chunk_0,CodeForces_chunk_0
 export OUTPUT_DIR="CURE_data"                      # local directory used by evaluation scripts
 bash data/download_data.sh
 ```
 
-`full-dataset-chunked` is the default and is recommended for normal
-reproduction and quick checks. The four complete Full Dataset files
-([CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json),
-[CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json),
-[LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json),
-and [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json))
-are much larger, so use `GROUP=full-dataset-complete` only for full-dataset
-reprocessing. Use `GROUP=small-dataset` for the 200-problem benchmarks used by
-non-main experiments.
+`GROUP=full-dataset-chunk` downloads chunked Full Dataset shards and is recommended for normal reproduction and quick checks. 
+`GROUP=full-dataset` downloads the complete benchmark files ([CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json), [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json)) for full-dataset reprocessing. 
+`GROUP=small-dataset` for the 200-problem benchmarks used by non-main experiments.
 
 #### Temp Data
 
@@ -155,10 +148,7 @@ export OUT_DIR=outputs/round05_metrics   # output directory for CSV and JSON sum
 bash evaluation/Temp_Data/temp_data.sh
 ```
 
-The `Logs/tts` baseline artifacts are separate from these CoSPlay temp-data
-matrices. Those methods store selected code and tests in different formats, so
-their README files describe the method-specific selected-code field and
-evaluation wrapper.
+The `Logs/tts` directory is used for TTS baseline comparison rather than CoSPlay matrix recomputation. It stores the released outputs for other test-time scaling methods such as MPSC and CodeTree, whose selected-code and generated-test formats differ from the CoSPlay `temp_data` matrices. Use those artifacts when reproducing the TTS baseline rows or checking method-specific selected-code files; each baseline folder includes its own README or wrapper for the exact parsing format.
 
 ### 🔥 Run
 

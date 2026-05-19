@@ -205,7 +205,7 @@ CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh
 
 By default, this evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`, `K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`.
 
-Evaluate a local checkpoint or another Hugging Face model:
+Evaluate another Hugging Face model:
 
 ```bash
 MODEL=/path/to/model CONDA_ENV_NAME=CosPlay bash evaluation/eval.sh

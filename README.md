@@ -110,7 +110,7 @@ Set `GROUP` to choose the dataset split, set `DATASETS` only when downloading sp
 
 ```bash
 export GROUP=full-dataset                          # full-dataset, full-dataset-chunk, small-dataset
-export DATASETS=""                                 # optional comma-separated files for the chosen group; examples below
+export DATASETS=""                                 # optional comma-separated files for the chosen group
 export OUTPUT_DIR="CURE_data"                      # local directory used by evaluation scripts
 bash data/download_data.sh
 ```

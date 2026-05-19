@@ -202,19 +202,17 @@ budget, self-play rounds, repeat IDs, and GPU placement through environment
 variables before calling `evaluation/eval.sh`:
 
 ```bash
-MODEL=Qwen/Qwen2.5-14B-Instruct \
-K_CODE=16 \
-K_CASE=16 \
-SELF_PLAY_ROUND=5 \
-EVAL_MODE=bon \
-REPEAT_IDS=1,2,3 \
-CUDA_VISIBLE_DEVICES=0,1 \
-GPU_GROUPS='[[0],[1]]' \
+export CONDA_ENV_NAME=CosPlay            # conda environment name
+export MODEL=Qwen/Qwen2.5-14B-Instruct   # Hugging Face model name
+export K_CODE=16                         # number of code candidates
+export K_CASE=16                         # number of generated test cases
+export SELF_PLAY_ROUND=5                 # self-play refinement rounds
+export EVAL_MODE=bon                     # evaluation mode
+export REPEAT_IDS=1,2,3                  # repeated trial IDs
+export CUDA_VISIBLE_DEVICES=0,1          # visible GPUs
+export GPU_GROUPS='[[0],[1]]'            # GPU groups used by parallel workers
 bash evaluation/eval.sh
 ```
-
-Without overrides, the script evaluates `Qwen/Qwen2.5-7B-Instruct` with `K_CODE=16`, `K_CASE=16`, `SELF_PLAY_ROUND=5`, and `EVAL_MODE=bon`. `MODEL` can be either a Hugging Face model name or a local checkpoint path; `REPEAT_IDS` runs repeated trials; and `CUDA_VISIBLE_DEVICES` together with `GPU_GROUPS` controls which GPUs are used by each evaluation group.
-
 
 Datasets are resolved as file stems under `CURE_data/`, for example `--dataset CodeContests_chunk_0` loads `CURE_data/CodeContests_chunk_0.json`.
 

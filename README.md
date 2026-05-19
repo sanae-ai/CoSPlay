@@ -110,14 +110,21 @@ Set `GROUP` to choose the dataset split, set `DATASETS` only when downloading sp
 
 ```bash
 export GROUP=full-dataset                          # full-dataset, full-dataset-chunk, small-dataset
-export DATASETS=""                                 # optional comma-separated file stems, e.g. LiveBench_chunk_0,CodeForces_chunk_0
+export DATASETS=""                                 # optional comma-separated files for the chosen group; examples below
 export OUTPUT_DIR="CURE_data"                      # local directory used by evaluation scripts
 bash data/download_data.sh
 ```
 
-`GROUP=full-dataset-chunk` downloads chunked Full Dataset shards and is recommended for normal reproduction and quick checks. 
-`GROUP=full-dataset` downloads the complete benchmark files ([CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json), [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json)) for full-dataset reprocessing. 
-`GROUP=small-dataset` for the 200-problem benchmarks used by non-main experiments.
+`GROUP=full-dataset-chunk` downloads chunked Full Dataset shards and is recommended for normal reproduction and quick checks; 
+Set `DATASETS=LiveBench_chunk_0,CodeForces_chunk_0` to download selected chunk files only. 
+
+`GROUP=full-dataset` downloads the complete benchmark files ([CodeContests.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeContests.json), [CodeForces.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/CodeForces.json), [LiveBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveBench.json), [LiveCodeBench.json](https://huggingface.co/datasets/yomi017/CosPlay/blob/main/Datasets/CURE_data/Full_Dataset/complete/LiveCodeBench.json)); 
+Set `DATASETS=CodeContests,LiveBench` to download selected complete files only. 
+
+`GROUP=small-dataset` downloads the 200-problem benchmark shards used by non-main experiments; 
+Set `DATASETS=LB_LCB_CC_CF_200_chunk_0` or another small-dataset file stem to download selected shards only. 
+
+Leave `DATASETS=""` to download every file in the selected `GROUP`.
 
 #### Temp Data
 

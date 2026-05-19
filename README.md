@@ -148,7 +148,7 @@ export OUT_DIR=outputs/round05_metrics   # output directory for CSV and JSON sum
 bash evaluation/Temp_Data/temp_data.sh
 ```
 
-The `Logs/tts` directory is used for TTS baseline comparison rather than CoSPlay matrix recomputation. It stores the released outputs for other test-time scaling methods such as MPSC and CodeTree, whose selected-code and generated-test formats differ from the CoSPlay `temp_data` matrices. Use those artifacts when reproducing the TTS baseline rows or checking method-specific selected-code files; each baseline folder includes its own README or wrapper for the exact parsing format.
+The `Logs/tts` directory is used for TTS baseline comparison rather than CoSPlay matrix recomputation. It stores the released outputs for other test-time scaling methods, whose selected-code and generated-test formats differ from the CoSPlay `temp_data` matrices. Use those artifacts when reproducing the TTS baseline rows or checking method-specific selected-code files; each baseline folder includes its own README or wrapper for the exact parsing format.
 
 ### 🔥 Run
 

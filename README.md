@@ -128,7 +128,7 @@ Leave `DATASETS=""` to download every file in the selected `GROUP`.
 
 #### Temp Data
 
-Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data), and evaluation logs are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).
+Download these artifacts from [temp_data](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data) when you only need to recompute metrics or inspect intermediate self-play rounds; evaluation logs for baseline methods are under [Logs](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs).
 
 
 - [temp_data/main](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/main): main-table runs on the Full Dataset.
@@ -136,13 +136,14 @@ Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/
 - [temp_data/scaling](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
 - [Logs/tts](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay and other tts method.
 
-[`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh) is used to recover the paper-table metrics from downloaded `temp_data` artifacts. It restores pass@k, generated-UT BoN, and output-consensus clustering scores from the cached evaluation matrices, then writes CSV/JSON summaries to `OUT_DIR`. The input is the saved final or self-play-round JSON files under `temp_data/main`, `temp_data/generalization`, `temp_data/scaling`, or `temp_data/tts`; the script does not regenerate model outputs or re-execute candidate code.
-Configure the input split or saved self-play round, then launch the wrapper to generate the metric summaries:
+`temp_data` is the released cache of CoSPlay generation and evaluation artifacts. The files already contain sampled code candidates, generated unit tests, held-out-test pass matrices, generated-UT selection matrices, and cached clustering metadata. 
+
+Use [`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh) to recover paper-table metrics from downloaded `temp_data` artifacts:
 
 ```bash
-export ROOT=/path/to/temp_data/tts       # temp_data root or JSON file
-export ROUND_ID=05                       # self-play round id; leave empty to include all saved rounds
-export OUT_DIR=outputs/round05_metrics   # output directory for CSV and JSON summaries
+export ROOT=/path/to/temp_data/tts       # input temp_data split/root/JSON; reads saved final or self-play-round result files
+export ROUND_ID=05                       # self-play round id; leave empty for final JSONs or all saved rounds
+export OUT_DIR=outputs/round05_metrics   # writes recovered pass@k, generated-UT BoN, clustering CSV/JSON summaries
 bash evaluation/Temp_Data/temp_data.sh
 ```
 

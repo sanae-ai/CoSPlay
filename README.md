@@ -136,17 +136,8 @@ Generated outputs are under [temp_data](https://huggingface.co/datasets/yomi017/
 - [temp_data/scaling](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/temp_data/scaling): candidate-budget scaling runs for `K_CODE = K_CASE in {2,4,8,16,32,64}` on the 7B setting. The `k=16` 7B run is also mirrored in `temp_data/tts` because it is the shared full CoSPlay reference.
 - [Logs/tts](https://huggingface.co/datasets/yomi017/CosPlay/tree/main/Logs/tts): TTS ablations, including the full `k=16` 7B/14B CoSPlay and other tts method.
 
-After downloading `temp_data`, you can recover the matrix-based metrics for any
-CoSPlay temp-data split without regenerating model outputs or re-executing code.
-The same matrix fields are used by `temp_data/main`, `temp_data/generalization`,
-`temp_data/scaling`, and `temp_data/tts`: `test_bool_table` for pass@k,
-`case_bool_table` for generated-UT BoN, and `new_bon_cluster_info["new_bon"]`
-for the paper-facing output-consensus clustering metric. The helper writes
-`per_file_metrics.csv`, `per_run_metrics.csv`, `per_setting_metrics.csv`, and
-`metrics_summary.json`.
-
-The command can be launched through the commented bash wrapper
-[`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh):
+[`evaluation/Temp_Data/temp_data.sh`](evaluation/Temp_Data/temp_data.sh) is used to recover the paper-table metrics from downloaded `temp_data` artifacts. It restores pass@k, generated-UT BoN, and output-consensus clustering scores from the cached evaluation matrices, then writes CSV/JSON summaries to `OUT_DIR`. The input is the saved final or self-play-round JSON files under `temp_data/main`, `temp_data/generalization`, `temp_data/scaling`, or `temp_data/tts`; the script does not regenerate model outputs or re-execute candidate code.
+Configure the input split or saved self-play round, then launch the wrapper to generate the metric summaries:
 
 ```bash
 export ROOT=/path/to/temp_data/tts       # temp_data root or JSON file

@@ -1,7 +1,13 @@
 # CoSPlay: Cooperative Self-Play at Test-Time with Self-Generated Code and Unit Test
 
 <p align="center">
-  <a href="CoSPlay.pdf"><img src="https://img.shields.io/badge/Paper-PDF-b31b1b" alt="Paper"></a>
+  <!-- <a href="CoSPlay.pdf"><img src="https://img.shields.io/badge/Paper-PDF-b31b1b" alt="Paper"></a> -->
+  <a href="https://arxiv.org/abs/2605.23491">
+    <img
+      src="https://img.shields.io/badge/Paper-Arxiv-red?logo=arxiv&logoColor=red"
+      alt="CoSPlay Paper on arXiv"
+    />
+  </a>
   <a href="https://github.com/sanae-ai/CosPlay"><img src="https://img.shields.io/badge/Code-GitHub-000000?logo=github" alt="Code"></a>
   <a href="https://huggingface.co/datasets/yomi017/CosPlay"><img src="https://img.shields.io/badge/Hugging%20Face-Data%20%26%20Logs-ffcc00?logo=huggingface" alt="Data and log"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT license"></a>

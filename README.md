@@ -286,7 +286,7 @@ If you use CoSPlay, please cite the paper:
 
 ## 🌻 Acknowledgement
 
-This work was supported in part by Guangzhou-HKUST(GZ) Joint Funding Program (Grant No. 2023A03J0008), Education Bureau of Guangzhou Municipality.
+This work was supported by the Guangdong Basic and Applied Basic Research Foundation (Grant No. 2026A1515011579), the High-performance Computing Platform of The Hong Kong University of Science and Technology (Guangzhou), the HKUST-HKUST(GZ) 1+1+1 Joint Funding Program (Grant No. C\_2025\_031), the Guangzhou-HKUST(GZ) Joint Funding Program (Grant No. 2023A03J0008), Education Bureau of Guangzhou Municipality, Jiangsu Industrial Technology Research Institute (JITRI) and Wuxi National High-Tech District (WND).
 
 We also thank the authors of [CURE](https://github.com/Gen-Verse/CURE) for releasing their codebase, which our evaluation code builds upon.
 
